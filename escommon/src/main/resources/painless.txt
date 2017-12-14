@@ -1,0 +1,35 @@
+CURL -XPOST '192.168.177.132:9200/test_ool/ool/2e50d927c666b39510b5b46d21634c4d/_update?pretty' -d '
+{
+    "script":{
+        "lang":"painless",
+        "inline":"ctx._source.student.books.removeIf(it -> (it.id=params.id))",
+        "params":{
+            "id":1
+        }
+    },
+    "params":{
+        "id":2
+    }
+}
+'
+
+CURL -XPOST '192.168.177.132:9200/test_ool/ool/2e50d927c666b39510b5b46d21634c4d/_update?pretty' -d '
+{
+    "script":{
+        "lang":"painless",
+        "inline":"ctx._source.student.books.add(params.book)",
+        "params":{
+            "book":{
+            "id":3,
+            "name":"新增"
+            }
+        }
+    },
+    "params":{
+            "book":{
+            "id":3,
+            "name":"新增"
+            }
+        }
+}
+'

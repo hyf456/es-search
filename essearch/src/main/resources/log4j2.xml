@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="base.dir">/data/logs/essearch</Property>
+        <Property name="pattern">requestTime:%d|traceID:%X{traceID}|USER_IP:%X{USER_IP}|%m%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}"/>
+        </Console>
+        <!-- auditTrail -->
+        <RollingFile name="auditTrailAppender" fileName="${base.dir}/auditTrail.log" filePattern="${base.dir}/auditTrail.log.%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+                <SizeBasedTriggeringPolicy size="1024 MB" />
+            </Policies>
+        </RollingFile>
+
+        <!-- root日志 -->
+        <RollingFile name="rootAppender" fileName="${base.dir}/root.log" filePattern="${base.dir}/root_1.log">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1G" />
+            </Policies>
+        </RollingFile>
+        <!-- 错误日志 -->
+        <RollingFile name="errorAppender" fileName="${base.dir}/error.log" filePattern="${base.dir}/error_1.log">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1024 MB" />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="cacheAppender" fileName="${base.dir}/cache.log" filePattern="${base.dir}/cache.%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="dbAppender" fileName="${base.dir}/db.log" filePattern="${base.dir}/db_.%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+        <RollingFile name="rpcAppender" fileName="${base.dir}/api.log" filePattern="${base.dir}/api_.%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <pattern>requestTime:%d|traceID:$${ctx:traceID}|%m%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <!-- default log -->
+        <Root level="info">
+            <AppenderRef ref="rootAppender"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- 异常日志 -->
+        <Logger name="com.hivescm.common.exception.DefaultExceptionHandler" level="INFO" additivity="true">
+            <AppenderRef ref="errorAppender" />
+        </Logger>
+        <!-- web访问日志 -->
+        <Logger name="com.hivescm.common.filter.WebAccessFilter" level="INFO" additivity="true">
+            <AppenderRef ref="auditTrailAppender"/>
+        </Logger>
+        <!-- 缓存日志 -->
+        <Logger name="com.hivescm.cache.utils.CacheLogger" level="INFO" additivity="true">
+            <AppenderRef ref="cacheAppender"/>
+        </Logger>
+        <!-- DB日志 -->
+        <Logger name="com.mogujie.trade.utils.TShardingLog" level="INFO" additivity="true">
+            <AppenderRef ref="dbAppender"/>
+        </Logger>
+        <Logger name="com.hivescm.common.log.FeignLogger" level="INFO" >
+            <AppenderRef ref="rpcAppender"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,38 @@
+ 1 安装 kibana
+ ①下载安装包：wget https://artifacts.elastic.co/downloads/kibana/kibana-5.5.2-linux-x86_64.tar.gz
+ ②校验安装包：sha1sum kibana-5.5.2-linux-x86_64.tar.gz
+ ③比对验证码：published SHA:89731f567b38e06515b1c74aac44f4c6a98bc47a
+ ④解压安装包：tar -xzf kibana-5.5.2-linux-x86_64.tar.gz
+ ⑤启动kibana：cd kibana-5.5.2-linux-x86_64/bin/kibana ./kibana
+ ⑥修改配置:
+    # Specifies the address to which the Kibana server will bind. IP addresses and host names are both valid values.
+    # The default is 'localhost', which usually means remote machines will not be able to connect.
+    # To allow connections from remote users, set this parameter to a non-loopback address.
+    server.host: "10.12.31.110"
+    # The URL of the Elasticsearch instance to use for all your queries
+    elasticsearch.url= "http://10.12.31.110:9200"
+
+2 安装 x-pack
+    ① ./elasticsearch-plugin install  x-pack
+    ② ./kibana-plugin install x-pack
+3 卸载 x-pack
+    ① ./elasticsearch-plugin remove  x-pack
+
+  
+
+4 linux 部署 5.5.1
+ ①max file descriptors
+
+ERROR: [2] bootstrap checks failed
+[1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65536]
+[2]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+#临时修改 
+sysctl -w vm.max_map_count=522144
+#永久修改,在/etc/sysctl.conf 新增 
+vm.max_map_count=262144 
+fs.file-max = 65536
+
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.2.tar.gz
+
+ulimit -n 125536
+

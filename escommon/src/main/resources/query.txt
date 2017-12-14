@@ -1,0 +1,26 @@
+CURL -XGET '10.12.31.110:9200/escenter/test?pretty' -d'
+{
+ "query" :  {
+    "bool" : {
+            "must" : [ {
+            "term" : {
+                "name" : "董春雨"
+            }
+            }, {
+            "term" : {
+                "age" : "35"
+            }
+            } ]
+        }
+    }
+}'
+
+CURL -XGET '10.12.31.22:9200/tms-distribution/tms-distribution-list?pretty' -d'{
+  "query" : {
+
+        "term" : {
+            "status" : "6"
+            }
+  }
+}
+'

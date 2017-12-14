@@ -1,0 +1,177 @@
+# √ 删除索引
+CURL -XDELETE '10.12.31.110:9200/test?pretty'
+
+CURL -XDELETE '10.12.31.110:9200/*2017.10.05?pretty'
+
+
+# √ 配置索引
+curl -XPUT 'localhost:9200/test_ool?pretty' -d'
+{
+    "mappings":{
+        "ool":{
+            "properties":{
+                "id":{
+                    "type":"long",
+                    "an"
+                },
+                "logol":{
+                    "type":"text,keyword"
+                },
+                "student":{
+                    "properties":{
+                        "id":{
+                            "type":"long"
+                        },
+                        "name":{
+                            "type":"string"
+                        },
+                        "books":{
+                            "type":"nested",
+                            "properties":{
+                                "name":{
+                                    "type":"string"
+                                },
+                                "id":{
+                                    "type":"long"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+curl -XPUT '10.12.31.110:9200/test_oll?pretty' -d'
+{
+    "mappings":{
+        "oll":{
+            "properties":{
+                "id":{
+                    "type":"long"
+                },
+                "logol":{
+                    "type":"string"
+                },
+                "students":{
+                    "type":"nested",
+                    "properties":{
+                         "id":{
+                                "type":"long"
+                            },
+                        "name":{
+                            "type":"string"
+                        },
+                        "books":{
+                            "type":"nested",
+                            "properties":{
+                                "name":{
+                                    "type":"string"
+                                },
+                                "id":{
+                                    "type":"long"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+curl -XPUT '192.168.177.132:9200/test_ol?pretty' -d'
+{
+    "mappings":{
+        "ol":{
+            "properties":{
+                "id":{
+                    "type":"long"
+                },
+                "logol":{
+                    "type":"string"
+                },
+                 "books":{
+                    "type":"nested",
+                    "properties":{
+                        "name":{
+                            "type":"string"
+                        },
+                        "id":{
+                            "type":"long"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+# √ 索引新增属性
+curl -XPUT '10.12.31.110:9200/test/_mapping/ool?pretty' -d'
+{
+    "properties": {
+        "student":{
+        "properties": {
+            "books":{
+                "type":"nested",
+                "properties": {
+                        "name":{
+                            "type":"string"
+                        },
+                        "size":{
+                            "type":"long"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+
+{
+    "mappings":{
+        "ool":{
+            "settings": {
+                "index.query.default_field": "id"
+            },
+            "include_in_all": false,
+            "_all": {
+                "enabled": false,
+                "analyzer": "whitespace"
+             }
+            "properties":{
+                "id":{
+                    "type":"long",
+                    "include_in_all": true,
+                    "analyzer": "whitespace | english | custom",
+                    "index":"analyzer | not_analyzer | not"
+                },
+                "student":{
+                    "properties":{
+                        "name":{
+                            "type":"string"
+                        },
+                        "books":{
+                            "type":"nested",
+                            "properties":{
+                                "name":{
+                                    "type":"string"
+                                },
+                                "id":{
+                                    "type":"long"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

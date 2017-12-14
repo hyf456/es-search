@@ -1,0 +1,58 @@
+# √ 索引数据
+curl -XPUT 'localhost:9200/test_ool/ool/12?pretty' -d'
+{
+    "id":2,
+    "logol":"apple",
+    "student":{
+        "name":"王佟娇",
+        "id":2,
+        "books":[
+             {
+                "id":3,
+                "name":"rabbitmq"
+            },
+            {
+                "id":4,
+                "name":"elasticsearc"
+            }
+        ]
+    }
+}
+'
+
+
+
+#1: 批量插入同一数据id使用{,}指定；
+curl -XPUT '10.12.31.110:9200/test_oll/oll/1?pretty' -d'
+{
+    "id":"2",
+    "logol":"apple",
+    "student":[
+        {
+        "id":1,
+        "name":"dongchunfu",
+        "books":[
+             {
+                "id":1,
+                "name":"三毛",
+                "size":1024
+            }
+        ]
+        },
+        {
+          "id":1,
+          "name":"dongchunfu",
+          "books":[
+               {
+                  "id":1,
+                  "name":"三毛",
+                  "size":1024
+              }
+          ]
+        }
+     ]
+}
+'
+
+
+

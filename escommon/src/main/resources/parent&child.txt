@@ -1,0 +1,73 @@
+
+CURL -XPUT 'localhost:9200/company' -d'
+{
+  "mappings": {
+    "branch": {},
+    "employee": {
+      "_parent": {
+        "type": "branch" 
+      }
+    }
+  }
+}
+'
+
+CURL -XPOST 'localhost:9200/company/branch/_bulk' -d'
+{ "index": { "_id": "london" }}
+{ "name": "London Westminster", "city": "London", "country": "UK" }
+{ "index": { "_id": "liverpool" }}
+{ "name": "Liverpool Central", "city": "Liverpool", "country": "UK" }
+{ "index": { "_id": "paris" }}
+{ "name": "Champs Élysées", "city": "Paris", "country": "France" }
+'
+
+CURL -XPUT 'localhost:9200/company/employee/1?parent=london' -d '
+{
+  "name":  "Alice Smith",
+  "dob":   "1970-10-24",
+  "hobby": "hiking"
+}
+'
+
+CURL -XPUT 'localhost:9200/company/employee/_bulk' -d '
+{ "index": { "_id": 2, "parent": "london" }}
+{ "name": "Mark Thomas", "dob": "1982-05-16", "hobby": "diving" }
+{ "index": { "_id": 3, "parent": "liverpool" }}
+{ "name": "Barry Smith", "dob": "1979-04-01", "hobby": "hiking" }
+{ "index": { "_id": 4, "parent": "paris" }}
+{ "name": "Adrien Grand", "dob": "1987-05-11", "hobby": "horses" }
+'
+
+
+CURL -XGET 'localhost:9200/company/branch/_search?pretty' -d '
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "query": {
+        "range": {
+          "dob": {
+            "gte": "1980-01-01"
+          }
+        }
+      }
+    }
+  }
+}
+'
+
+CURL -XGET 'localhost:9200/company/employee/_search?pretty' -d '
+{
+  "query": {
+    "has_parent": {
+      "type": "branch", 
+      "query": {
+        "match": {
+          "country": "UK"
+        }
+      }
+    }
+  }
+}
+'
+

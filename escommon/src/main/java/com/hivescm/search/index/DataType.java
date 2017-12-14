@@ -1,0 +1,15 @@
+package com.hivescm.search.index;
+
+/**
+ * elasticsearch 数据类型
+ * https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
+ * 
+ * @author SHOUSHEN LUAN
+ */
+public enum DataType {
+	TEXT, KEYWORD,
+	//
+	DATE, IP, BOOLEAN,
+	// number类型
+	LONG, INTEGER, SHORT, BYTE, DOUBLE, FLOAT
+}

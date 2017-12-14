@@ -1,0 +1,103 @@
+# √ oll 在某个list中新增一个元素
+curl -XPOST '10.12.31.110:9200/escenter/test/%7B"id":432164557%7D/_update?pretty' -d'
+{
+   "script" : "ctx._source.list+=new_tag",
+   "params" : {
+      "new_tag" : {"id":11,"name":"dongchunfu","date":"1980-09-10"}
+   }
+}
+'
+
+# √ oll 在第二层嵌套中删除一条数据
+curl -XPOST '10.12.31.110:9200/escenter/test/%7B"id":432164557%7D/_update?pretty' -d'
+{
+   "script" : "ctx._source.list.removeAll{it.id == remove_id}",
+   "params" : {
+       "remove_id":5
+   }
+}
+'
+
+# √ oll 在第三层嵌套中添加一条数据
+curl -XPOST '10.12.31.110:9200/escenter/test/%7B"id":432164557%7D/_update?pretty' -d'
+{
+   "script" : "ctx._source.list.findAll {  if(it.id==id1||it.id==id2) {  if(it.kps==null){it.kps= kp5} else{ it.kps+= kp5} } } ",
+   "params" : {
+       "id1":10,
+       "id2":1,
+       "kp5":{"id":10,"name":"dongchunfu","date":"1980-09-10"}
+   }
+}
+'
+
+# √ oll 在第三层嵌套中删除一条数据
+curl -XPOST '10.12.31.110:9200/escenter/test/%7B"id":432164557%7D/_update?pretty' -d'
+{
+   "script" : "ctx._source.list.findAll {  if(it.id==id1||it.id==id2) {  it.kps.removeAll {it.id==id}  } }  ",
+   "params" : {
+       "id":10,
+       "id1":10,
+       "id2":1,
+       "kp5":{"id":10,"name":"dongchunfu","date":"1980-09-10"}
+   }
+}
+'
+
+# √ ool 在l中新增一个元素
+curl -XPOST '10.12.31.110:9200/test/ool/5/_update?pretty' -d'
+{
+   "script" : "if(ctx._source.student.books==null){ctx._source.student.books=newBook}else{ctx._source.student.books += newBook}",
+   "params" : {
+     "newBook":{"name":"elasticsearch","size":"2048"}
+   }
+}
+'
+
+
+# √ ool 删除一个(groovy)
+curl -XPOST 'localhost:9200/test_ool/ool/1/_update?pretty' -d'
+{
+    "lang":"groovy",
+   "script" : "ctx._source.student.books.removeAll{it.id=id}",
+   "params" : {
+     "id":3
+   }
+}
+'
+
+# √ ool 新增一个(painless)
+curl -XPOST 'localhost:9200/test_ool/ool/1/_update?pretty' -d'
+{
+   "script" : "ctx._source.student.books.add(params.new1)",
+   "params" : {
+         "new1":{
+            "id":3,
+            "name":"newBook"
+         }
+     }
+}
+'
+
+# 其它语法收录
+ctx._source.tags.contains(tag) ? ctx.op = "delete" : ctx.op = "none"'
+ctx._source.counter += 1
+
+# √ 更新
+ctx._source.quests.findAll {  if(it.qid==qid3) {  it.kps.findAll{  if(it.kid==kid){ it.kname=kname;it.kmd=kmd } } }}  "
+
+
+curl -XPOST '10.12.31.110:9200/test_oll/oll/-1407333374/_update?pretty' -d'
+{
+   "script" : "ctx._source.students.findAll{if(it.id==id1){if(it.books==null){it.books=listValue}else{it.books+=objectValue}}}",
+   "params" : {
+     listValue:[{"size":2017,"name":"groovy","id":66}],
+     objectValue:{"size":2017,"name":"groovy","id":66},
+     id1:1
+   }
+}
+'
+######es groovy 测试结果
+1：["","",""] ctx._source.firstField += ""(√); ctx._source.firstField.add ( "" ) (√);
+2:{[{},{}]} ctx._source.firstField += ""(◊) ,ctx._source.firstField.addALL{} 测试失败；
+
+

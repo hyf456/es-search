@@ -1,0 +1,15 @@
+# 指定分析器,对text进行相关分析操作
+CURL -XGET '10.12.31.110:9200/indexName/_analyze?pretty' -d'
+{
+    "field":"fieldName"
+    "text":"10.2233"
+}
+'
+
+# 根据已配置的映射,对相应字段进行分析效果测试
+curl -XGET '10.12.31.110:9200/my_index/_analyze?pretty' -H 'Content-Type: application/json' -d'
+{
+  "field": "text",
+  "text": "The quick Brown Foxes."
+}
+'

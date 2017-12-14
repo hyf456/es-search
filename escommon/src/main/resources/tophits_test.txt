@@ -1,0 +1,120 @@
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs": {
+        "top_tags": {
+            "terms": {
+                "field": "type",
+                "size": 3
+            },
+            "aggs": {
+                "top_sales_hits": {
+                    "top_hits": {
+                        "sort": [
+                            {
+                                "date": {
+                                    "order": "desc"
+                                }
+                            }
+                        ],
+                        "_source": {
+                            "includes": [ "date", "price" ]
+                        },
+                        "size" : 1
+                    }
+                }
+            }
+        }
+    }
+}
+
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs": {
+        "top_tags": {
+            "terms": {
+                "field": "costTypeId",
+                "size": 153000
+            },
+            "aggs": {
+                "top_sales_hits": {
+                    "top_hits": {
+                        "_source": {
+                            "includes": [ "cost", "carId" ]
+                        },
+
+                        "size" : 1
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs": {
+        "top_tags": {
+            "terms": {
+                "field": "cost",
+                "size": 3000
+            },
+            "aggs": {
+                "top_sales_hits": {
+                    "top_hits": {
+                        "_source": {
+                            "includes": [ "cost", "carId" ]
+                        },
+                        "size" : 1
+                    }
+                }
+            }
+        }
+    }
+}
+'
+
+
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs" : {
+        "type_count" : {
+            "cardinality" : {
+                "field" : "costTypeId"
+            }
+        }
+    }
+}
+'
+
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs" : {
+        "type_count" : {
+            "cardinality" : {
+                "field" : "costTypeId"
+            }
+        }
+    }
+}
+'
+
+
+POST /sales/_search?size=0
+{
+   
+}
+
+
+curl -XPOST '10.12.31.110:9200/test/_search?size=0' -d '
+{
+    "aggs": {
+        "top_tags": {
+            "terms": {
+                "field": "cost",
+                "size": 153000
+            }
+        }
+    }
+}
+'
