@@ -1,7 +1,9 @@
 package com.hivescm.search.index;
 
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.RandomUtils;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
@@ -30,7 +32,7 @@ public class TestSearch {
 	private IndexAdmin indexAdmin;
 
 	@Test
-	public void test_dump_es_index() {
+	public void test_dump_es_index() throws UnknownHostException, InterruptedException, ExecutionException {
 		indexAdmin.dump_es_index();
 	}
 
