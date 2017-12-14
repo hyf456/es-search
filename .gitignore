@@ -3,4 +3,5 @@
 .settings/
 /springcloud/
 .project
+.DS_Store
 /essearch/springcloud/
