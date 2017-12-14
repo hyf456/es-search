@@ -1,7 +1,5 @@
 package com.hivescm.escenter.core.config;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Timer;
@@ -18,24 +16,17 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.compress.CompressedXContent;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.xpack.client.PreBuiltXPackTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hivescm.common.serialize.api.json.GsonSerialize;
 import com.hivescm.search.index.IndexParser;
-import com.hivescm.search.index.TestEnvConfig;
 
 @Component
 public class IndexAdmin {
@@ -43,22 +34,6 @@ public class IndexAdmin {
 	private Client client;
 	private static final Map<String, IndexHelper> CACHE = new ConcurrentHashMap<>();
 	private static final Logger LOGGER = LoggerFactory.getLogger(IndexAdmin.class);
-
-	public TransportClient createTestClient() throws UnknownHostException {
-		final Settings settings = Settings.builder().put("cluster.name", "hivescm-test")
-				.put("xpack.security.user", "elastic:changeme").build();
-
-		// TransportClient transportClient = new PreBuiltTransportClient(settings);
-		TransportClient transportClient = new PreBuiltXPackTransportClient(settings);
-		final String[] addresses = "192.168.177.11:9300,192.168.177.226:9300".split(",");
-		for (String address : addresses) {
-			final String[] hostAndPort = address.split(":");
-			final InetSocketTransportAddress inetSocketTransportAddress = new InetSocketTransportAddress(
-					InetAddress.getByName(hostAndPort[0]), Integer.valueOf(hostAndPort[1]));
-			transportClient.addTransportAddress(inetSocketTransportAddress);
-		}
-		return transportClient;
-	}
 
 	@PostConstruct
 	private void init() {
