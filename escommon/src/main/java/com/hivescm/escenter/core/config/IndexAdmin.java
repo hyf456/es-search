@@ -73,7 +73,6 @@ public class IndexAdmin {
 	 */
 	private String loadIndexStruct(String index, String type) {
 		ClusterStateResponse response = client.admin().cluster().prepareState().execute().actionGet();
-		client.admin().indices().prepareCreate("tms-back-warehouse-detail");
 		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
 		if (immutableOpenMap != null) {
 			IndexMetaData metaData = immutableOpenMap.get(index);
@@ -113,7 +112,7 @@ public class IndexAdmin {
 			String index = entity.key;
 			if (index.startsWith("tms")) {// 只迁移tms开头的索引
 				entity.value.getMappings().forEach((cursor) -> {
-//					TestEnvConfig.createIndex(index, cursor);
+					// TestEnvConfig.createIndex(index, cursor);
 				});
 			}
 		});
@@ -125,24 +124,13 @@ public class IndexAdmin {
 		return response.isExists();
 	}
 
-	/***
-	 * 如果索引存在则删除
-	 * 
-	 * @param index
-	 * @return
-	 * @throws InterruptedException
-	 * @throws ExecutionException
-	 */
-	private boolean existsAndDelete(String index) throws InterruptedException, ExecutionException {
-		if (isExistsIndex(index)) {
-			return deleteIndex(index);
-		}
-		return false;
-	}
-
 	public boolean deleteIndex(String index) throws InterruptedException, ExecutionException {
-		DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(index)).get();
-		return deleteResponse.isAcknowledged();
+		if (isExistsIndex(index)) {
+			DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(index)).get();
+			return deleteResponse.isAcknowledged();
+		} else {
+			return false;
+		}
 	}
 
 	public boolean createIndex(String index) throws InterruptedException, ExecutionException {
