@@ -147,4 +147,27 @@ public class IndexAdmin {
 			LOGGER.info("register or update index:" + index + "|type:" + type);
 		}
 	}
+
+	/**
+	 * 获取索引元数据信息
+	 * 
+	 * @param index
+	 * @param type
+	 * @return
+	 */
+	public MappingMetaData loadIndexMeta(String index, String type) {
+		ClusterStateResponse response = client.admin().cluster().prepareState().execute().actionGet();
+		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
+		if (immutableOpenMap != null) {
+			IndexMetaData metaData = immutableOpenMap.get(index);
+			if (metaData != null) {
+				ImmutableOpenMap<String, MappingMetaData> mappings = metaData.getMappings();
+				if (mappings != null) {
+					return mappings.get(type);
+				}
+			}
+		}
+		LOGGER.error("获取ES数据结构失败 index:" + index + "|type:" + type);
+		return null;
+	}
 }

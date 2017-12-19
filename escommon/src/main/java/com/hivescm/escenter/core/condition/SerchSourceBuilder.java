@@ -45,16 +45,19 @@ public class SerchSourceBuilder {
 	 */
 	public void page(PageCondition pageCondition, final SearchSourceBuilder searchSourceBuilder) {
 		final PageCondition page = getPage(pageCondition);
-		searchSourceBuilder.from(page.getPageSize() * (page.getCurrentPage() - 1));
-		searchSourceBuilder.size(page.getPageSize());
+		if (page != null) {
+			searchSourceBuilder.from(page.getPageSize() * (page.getCurrentPage() - 1));
+			searchSourceBuilder.size(page.getPageSize());
+		}
 	}
 
 	public PageCondition getPage(PageCondition pageCondition) {
 		if (null == pageCondition) {
-			pageCondition = new PageCondition();
-			pageCondition.setPageSize(1000);
-			pageCondition.setCurrentPage(1);
-			return pageCondition;
+			// pageCondition = new PageCondition();
+			// pageCondition.setPageSize(1000);
+			// pageCondition.setCurrentPage(1);
+			// return pageCondition;
+			return null;
 		}
 
 		Integer currentPage = pageCondition.getCurrentPage();
@@ -72,7 +75,7 @@ public class SerchSourceBuilder {
 	/**
 	 * 域 过滤
 	 *
-	 * @param needFields          需要过滤的域
+	 * @param needFields 需要过滤的域
 	 * @param searchSourceBuilder 查询请求构建器
 	 */
 	public void field(final List<String> needFields, SearchSourceBuilder searchSourceBuilder) {
@@ -87,7 +90,7 @@ public class SerchSourceBuilder {
 	/**
 	 * 排序条件
 	 *
-	 * @param orderConditions     排序条件
+	 * @param orderConditions 排序条件
 	 * @param searchSourceBuilder 查询请求构建器
 	 */
 	public void sort(final List<OrderCondition> orderConditions, SearchSourceBuilder searchSourceBuilder) {

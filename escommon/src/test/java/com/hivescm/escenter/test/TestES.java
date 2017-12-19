@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.yaml.snakeyaml.extensions.compactnotation.PackageCompactConstructor;
 
 import com.google.common.collect.Lists;
 import com.hivescm.common.domain.DataResult;
@@ -28,6 +29,7 @@ import com.hivescm.escenter.common.SaveESObject;
 import com.hivescm.escenter.common.StatisticESObject;
 import com.hivescm.escenter.common.UpdateESObject;
 import com.hivescm.escenter.common.conditions.FunctionCondition;
+import com.hivescm.escenter.common.conditions.GroupByCondition;
 import com.hivescm.escenter.common.conditions.OrderCondition;
 import com.hivescm.escenter.common.conditions.PageCondition;
 import com.hivescm.escenter.common.conditions.SearchCondition;
@@ -339,7 +341,7 @@ public class TestES {
 		{
 			SearchCondition searchCondition = new SearchCondition();
 			searchCondition.setFieldName("invoiceCompany");
-			searchCondition.setFieldValues(new String[]{"可口可乐1"});
+			searchCondition.setFieldValues(new String[] { "可口可乐1" });
 			searchCondition.setConditionExpression(ConditionExpressionEnum.NOT_IN);
 			conditions.add(searchCondition);
 		}
@@ -385,5 +387,69 @@ public class TestES {
 		// id
 		esObject.setId(id);
 		return esObject;
+	}
+
+	@Test
+	public void test_sum() {
+		QueryESObject queryESObject = new QueryESObject(SYSTEM_NAME, "tms-waybill_tmp", "tms-waybill-list");
+		List<SearchCondition> conditions = new ArrayList<>();
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("status");
+			searchCondition.setConditionExpression(ConditionExpressionEnum.EQUAL);
+			searchCondition.setSingleValue(1);
+			conditions.add(searchCondition);
+		}
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("truckOrdered");
+			searchCondition.setSingleValue(false);
+			searchCondition.setConditionExpression(ConditionExpressionEnum.EQUAL);
+			conditions.add(searchCondition);
+		}
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("companyId");
+			searchCondition.setSingleValue(220);
+			searchCondition.setConditionExpression(ConditionExpressionEnum.EQUAL);
+			conditions.add(searchCondition);
+		}
+		queryESObject.setSearchConditions(conditions);
+		{
+			GroupByCondition groupByCondition = new GroupByCondition();
+			List<FunctionCondition>list= Lists.newArrayList();
+			{
+				FunctionCondition condition = new FunctionCondition();
+				condition.setField("totalFee");
+				condition.setFunction(SqlFunctionEnum.SUM);
+				condition.setFunctionName("totalFee");
+				list.add(condition);
+			}
+			{
+				FunctionCondition condition1 = new FunctionCondition();
+				condition1.setField("volume");
+				condition1.setFunction(SqlFunctionEnum.SUM);
+				condition1.setFunctionName("volume");
+				list.add(condition1);
+			}
+			{
+				FunctionCondition condition2 = new FunctionCondition();
+				condition2.setField("weight");
+				condition2.setFunction(SqlFunctionEnum.SUM);
+				condition2.setFunctionName("weight");
+				list.add(condition2);
+			}
+			groupByCondition.setFunctionConditions(list);
+			groupByCondition.setGroupFields(Lists.newArrayList("weight","totalFee","volume"));
+			queryESObject.setGroupByCondition(groupByCondition);
+		}
+		PageCondition pageCondition=new PageCondition();
+		pageCondition.setCurrentPage(1);
+		pageCondition.setPageSize(1);
+		queryESObject.setPageCondition(pageCondition);
+		DataResult<ESResponse> dataResult = esSearchService.esQuery(queryESObject);
+		System.out.println(dataResult);
+		Assert.assertTrue(dataResult.isSuccess());
+		System.out.println(dataResult.toJSON());
 	}
 }

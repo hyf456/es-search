@@ -70,7 +70,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esSave(SaveESObject obj) {
-        LOGGER.info("esclient index request param:{}.", obj);
+        LOGGER.debug("esclient index request param:{}.", obj);
         final DataResult<Boolean> dataResult = esSaveValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -80,7 +80,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<ESResponse> esQuery(QueryESObject obj) {
-        LOGGER.info("esclient query req param:{}.", obj);
+        LOGGER.debug("esclient query req param:{}.", obj);
         final DataResult<Boolean> validateResult = esQueryValidator.validate(obj);
         if (validateResult.isFailed()) {
             LOGGER.warn("esclient query req param error, illegal param:{}.", obj);
@@ -93,7 +93,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esDelete(DeleteESObject obj) {
-        LOGGER.info("es delete , param:{}.", obj);
+        LOGGER.debug("es delete , param:{}.", obj);
         final DataResult<Boolean> dataResult = esDeleteValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -103,7 +103,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esUpdate(UpdateESObject obj) {
-        LOGGER.info("es update , param:{}.", obj);
+        LOGGER.debug("es update , param:{}.", obj);
         final DataResult<Boolean> dataResult = esUpdateValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -113,7 +113,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esBatchSave(BatchSaveESObject obj) {
-        LOGGER.info("es batch save , param:{}.", obj);
+        LOGGER.debug("es batch save , param:{}.", obj);
         final DataResult<Boolean> dataResult = esBatchSaveValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -123,7 +123,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esBatchUpdate(BatchUpdateESObject obj) {
-        LOGGER.info("es batch update , param:{}.", obj);
+        LOGGER.debug("es batch update , param:{}.", obj);
         final DataResult<Boolean> dataResult = esBatchUpdateValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -133,7 +133,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> esBatchDelete(BatchDeleteESObject obj) {
-        LOGGER.info("es batch delete , param:{}.", obj);
+        LOGGER.debug("es batch delete , param:{}.", obj);
         final DataResult<Boolean> dataResult = esBatchDeleteValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -143,7 +143,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> conditionUpdate(ConditionUpdateESObject obj) {
-        LOGGER.info("es condition update , param:{}.", obj);
+        LOGGER.debug("es condition update , param:{}.", obj);
         final DataResult<Boolean> dataResult = esConditionUpdateValidator.validate(obj);
         if (dataResult.isFailed()) {
             return dataResult;
@@ -153,7 +153,7 @@ public class ESSearchServiceImpl implements ESSearchService {
 
     @Override
     public DataResult<Boolean> conditionDelete(ConditionDeleteESObject obj) {
-        LOGGER.info("es condition delete , param:{}.", obj);
+        LOGGER.debug("es condition delete , param:{}.", obj);
         final DataResult<Boolean> dataResultResult = esConditionDeleteValidator.validate(obj);
         if (dataResultResult.isFailed()) {
             return dataResultResult;
