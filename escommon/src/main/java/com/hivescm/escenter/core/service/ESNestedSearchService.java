@@ -109,15 +109,15 @@ public class ESNestedSearchService {
 	public DataResult<Boolean> save(SaveESObject esObject) {
 		try {
 			final IndexRequestBuilder indexRequest = getIndexRequest(esObject);
-			LOGGER.info("es service index request, param:{}.", indexRequest);
+			LOGGER.debug("es service index request, param:{}.", indexRequest);
 			if (esObject.isRefresh()) {
 				indexRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
 			IndexResponse indexResponse = indexRequest.execute().get();
-			LOGGER.info("es service index response, response:{}, param:{}.", indexResponse, esObject);
+			LOGGER.debug("es service index response, response:{}, param:{}.", indexResponse, esObject);
 			return DataResult.success(DocWriteResponse.Result.CREATED == indexResponse.getResult(), Boolean.class);
 		} catch (Exception ex) {
-			LOGGER.info("es service index error, param:" + esObject, ex);
+			LOGGER.error("es service index error, param:" + esObject, ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 		}
 	}
@@ -132,17 +132,17 @@ public class ESNestedSearchService {
 		final UpdateRequestBuilder updateRequest = esObject.nestedUpdate() ? getNestedListUpdateRequest(esObject)
 				: getUpdateRequest(esObject);
 		try {
-			LOGGER.info("es service update request, param:{}.", updateRequest);
+			LOGGER.debug("es service update request, param:{}.", updateRequest);
 			updateRequest.setDetectNoop(false);
 			if (esObject.isRefresh()) {
 				updateRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
 			UpdateResponse updateResponse = updateRequest.execute().get();
-			LOGGER.info("es service update response, response:{}, param:{}.", updateResponse, esObject);
+			LOGGER.debug("es service update response, response:{}, param:{}.", updateResponse, esObject);
 			final DocWriteResponse.Result result = updateResponse.getResult();
 			return DataResult.success(DocWriteResponse.Result.UPDATED == result, Boolean.class);
 		} catch (Exception ex) {
-			LOGGER.info("es service update failed,param:" + esObject, ex);
+			LOGGER.error("es service update failed,param:" + esObject, ex);
 			final String message = ex.getMessage();
 			if (message != null && message.contains("document missing")) {
 				return DataResult.faild(ESErrorCode.DOC_NOT_EXIST_ERROR_CODE, "更新文档不存在");
@@ -168,9 +168,9 @@ public class ESNestedSearchService {
 
 			groupConditionBuilder.build(searchRequestBuilder, esObject);
 			// searchRequestBuilder 使用 Gson 回环
-			LOGGER.info("es service query request, param:{}.", searchRequestBuilder);
+			LOGGER.debug("es service query request, param:{}.", searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().actionGet();
-			LOGGER.info("es service query response, reponse:{},param:{}.", searchResponse, searchRequestBuilder);
+			LOGGER.debug("es service query response, reponse:{},param:{}.", searchResponse, searchRequestBuilder);
 
 		} catch (IndexNotFoundException infex) {
 			LOGGER.error("es service query error, param:" + esObject, infex);
@@ -185,7 +185,7 @@ public class ESNestedSearchService {
 
 		try {
 			final ESResponse handlerResponse = esQueryResponseHandler.handler(esObject, searchResponse);
-			LOGGER.info("es center query handle result:{}.", handlerResponse);
+			LOGGER.debug("es center query handle result:{}.", handlerResponse);
 			return DataResult.success(handlerResponse, ESResponse.class);
 		} catch (Exception ex) {
 			LOGGER.error("escenter query handle error, param:" + esObject, ex);
@@ -202,10 +202,10 @@ public class ESNestedSearchService {
 	public DataResult<Boolean> delete(final DeleteESObject esObject) {
 		final DeleteRequestBuilder deleteRequest = getDeleteRequest(esObject);
 		try {
-			LOGGER.info("elastic delete request param:{}.", deleteRequest);
+			LOGGER.debug("elastic delete request param:{}.", deleteRequest);
 			deleteRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			DeleteResponse deleteResponse = deleteRequest.execute().actionGet();
-			LOGGER.info("elastic delete response,response:{} ,param:{}.", deleteResponse, esObject);
+			LOGGER.debug("elastic delete response,response:{} ,param:{}.", deleteResponse, esObject);
 
 			if (DocWriteResponse.Result.DELETED == deleteResponse.getResult()) {
 				return DataResult.success(Boolean.TRUE, Boolean.class);
@@ -238,9 +238,9 @@ public class ESNestedSearchService {
 			bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 		}
 		try {
-			LOGGER.info("es service bulk index request param:{}.", bulkRequestBuilder);
+			LOGGER.debug("es service bulk index request param:{}.", bulkRequestBuilder);
 			BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-			LOGGER.info("es service bulk index response, param:{},response:{}.", obj, bulkResponse);
+			LOGGER.debug("es service bulk index response, param:{},response:{}.", obj, bulkResponse);
 			return DataResult.success(!bulkResponse.hasFailures(), Boolean.class);
 		} catch (Exception ex) {
 			LOGGER.error("es serivce bulk index error,req param:" + bulkRequestBuilder, ex);
@@ -264,12 +264,12 @@ public class ESNestedSearchService {
 			try {
 				bulkRequestBuilder.add(getUpdateRequest(updateDatas.get(i)));
 				if (i % bulkSize == 0 || (i + 1) == size) {
-					LOGGER.info("es service bulk update request param:{}.", bulkRequestBuilder);
+					LOGGER.debug("es service bulk update request param:{}.", bulkRequestBuilder);
 					if (obj.isRefresh()) {
 						bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 					}
 					final BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-					LOGGER.info("es service batch update response, param:{},response:{}.", obj, bulkResponse);
+					LOGGER.debug("es service batch update response, param:{},response:{}.", obj, bulkResponse);
 					if (bulkResponse.hasFailures()) {
 						result = false;
 					}
@@ -298,12 +298,12 @@ public class ESNestedSearchService {
 			try {
 				bulkRequestBuilder.add(getDeleteRequest(deleteDatas.get(i)));
 				if (i % bulkSize == 0 || (i + 1) == size) {
-					LOGGER.info("es service bulk delete request param:{}.", bulkRequestBuilder);
+					LOGGER.debug("es service bulk delete request param:{}.", bulkRequestBuilder);
 					if (obj.isRefresh()) {
 						bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 					}
 					final BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-					LOGGER.info("es service batch delete response, param:{},response:{}.", obj, bulkResponse);
+					LOGGER.debug("es service batch delete response, param:{},response:{}.", obj, bulkResponse);
 					if (bulkResponse.hasFailures()) {
 						result = false;
 					}
@@ -331,7 +331,7 @@ public class ESNestedSearchService {
 		try {
 			final List<String> docIds = getAccordConditionDocIds(esObject.getConditions(), esObject);
 			if (CollectionUtils.isEmpty(docIds)) {
-				LOGGER.info("update by condition not find any docs ,req param ：{}", esObject);
+				LOGGER.debug("update by condition not find any docs ,req param ：{}", esObject);
 				dataResult.setResult(Boolean.TRUE);
 				return dataResult;
 			}
@@ -346,9 +346,9 @@ public class ESNestedSearchService {
 			if (esObject.isRefresh()) {
 				bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
-			LOGGER.info("elastic update by condition request param:{}.", bulkRequestBuilder);
+			LOGGER.debug("elastic update by condition request param:{}.", bulkRequestBuilder);
 			bulkResponse = bulkRequestBuilder.execute().get();
-			LOGGER.info("elastic update by condition response, param:{},response:{}.", esObject, bulkResponse);
+			LOGGER.debug("elastic update by condition response, param:{},response:{}.", esObject, bulkResponse);
 		} catch (Exception ex) {
 			LOGGER.error("elastic update by condition error,req param:" + bulkRequestBuilder, ex);
 			dataResult.setStatus(new Status(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage()));
@@ -372,7 +372,7 @@ public class ESNestedSearchService {
 		try {
 			final List<String> docIds = getAccordConditionDocIds(esObject.getConditions(), esObject);
 			if (CollectionUtils.isEmpty(docIds)) {
-				LOGGER.info("elastic delete by condition not find any docs ,req param ：{}", esObject);
+				LOGGER.debug("elastic delete by condition not find any docs ,req param ：{}", esObject);
 				dataResult.setResult(Boolean.TRUE);
 				return dataResult;
 			}
@@ -385,9 +385,9 @@ public class ESNestedSearchService {
 			if (esObject.isRefresh()) {
 				bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
-			LOGGER.info("elastic delete by condition  request param:{}.", bulkRequestBuilder);
+			LOGGER.debug("elastic delete by condition  request param:{}.", bulkRequestBuilder);
 			bulkResponse = bulkRequestBuilder.execute().get();
-			LOGGER.info("elastic delete by condition response, param:{},response:{}.", esObject, bulkResponse);
+			LOGGER.debug("elastic delete by condition response, param:{},response:{}.", esObject, bulkResponse);
 		} catch (Exception ex) {
 			LOGGER.error("elastic delete by condition error,req param:" + bulkRequestBuilder, ex);
 			dataResult.setStatus(new Status(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage()));
@@ -419,12 +419,12 @@ public class ESNestedSearchService {
 		queryConditionBuilder.builde(searchRequestBuilder, queryESObject);
 		searchRequestBuilder.setScroll(new Scroll(TimeValue.timeValueSeconds(scrollTime)));
 
-		LOGGER.info("es service quere by condition  request param:{}.", searchRequestBuilder);
+		LOGGER.debug("es service quere by condition  request param:{}.", searchRequestBuilder);
 		final SearchResponse searchResponse = searchRequestBuilder.execute().get();
-		LOGGER.info("es service quere by condition  response, param:{},response:{}.", conditions, searchResponse);
+		LOGGER.debug("es service quere by condition  response, param:{},response:{}.", conditions, searchResponse);
 		final SearchHits hits = searchResponse.getHits();
 		if (hits.getHits().length == 0) {
-			LOGGER.info("es service quere by condition not find documents , param:{}.", conditions);
+			LOGGER.debug("es service quere by condition not find documents , param:{}.", conditions);
 			return null;
 		}
 
@@ -433,7 +433,7 @@ public class ESNestedSearchService {
 			docIds.add(hit.getId());
 		}
 		scrollSearch(searchResponse.getScrollId(), docIds, new ArrayList<>());
-		LOGGER.info("es service quere by condition find documents , param:{},docIds:{}.", conditions, docIds);
+		LOGGER.debug("es service quere by condition find documents , param:{},docIds:{}.", conditions, docIds);
 		return docIds;
 	}
 
@@ -473,9 +473,9 @@ public class ESNestedSearchService {
 	private void closeScrollWindow(List<String> scrollIds) {
 		final ClearScrollRequestBuilder clearScrollRequestBuilder = esClient.prepareClearScroll();
 		clearScrollRequestBuilder.setScrollIds(scrollIds);
-		LOGGER.info("es clear scroll windows ,scrollIds:{}.", scrollIds);
+		LOGGER.debug("es clear scroll windows ,scrollIds:{}.", scrollIds);
 		final ClearScrollResponse clearScrollResponse = clearScrollRequestBuilder.execute().actionGet();
-		LOGGER.info("es clear scroll windows ,scrollIds:{},clearResponse:{}.", scrollIds,
+		LOGGER.debug("es clear scroll windows ,scrollIds:{},clearResponse:{}.", scrollIds,
 				clearScrollResponse.isSucceeded());
 	}
 
@@ -527,14 +527,11 @@ public class ESNestedSearchService {
 			dataBytes = OBJECT_MAPPER.writeValueAsBytes(esObject.getDataMap());
 		} catch (JsonProcessingException e) {
 			// never hapened
-			e.printStackTrace();
+			LOGGER.error("", e);
 		}
 
 		IndexRequestBuilder indexRequestBuilder = esClient.prepareIndex().setIndex(esObject.getIndexName())
 				.setType(esObject.getTypeName());
-		// if (esObject.isRefresh()) {
-		// indexRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-		// }
 		if (StringUtils.isNotBlank(dataId)) {
 			indexRequestBuilder.setId(dataId);
 		}
@@ -553,9 +550,6 @@ public class ESNestedSearchService {
 	private DeleteRequestBuilder getDeleteRequest(DeleteESObject deleteData) {
 		String docId = getId(deleteData.getUkMap());
 		DeleteRequestBuilder builder = esClient.prepareDelete(deleteData.getIndexName(), deleteData.getTypeName(), docId);
-		// if (deleteData.isRefresh()) {
-		// builder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
-		// }
 		return builder;
 	}
 

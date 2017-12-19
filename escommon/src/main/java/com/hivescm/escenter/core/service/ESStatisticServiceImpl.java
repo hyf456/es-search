@@ -79,9 +79,9 @@ public class ESStatisticServiceImpl {
 
 		SearchResponse searchResponse;
 		try {
-			LOGGER.info("elastic statistic req param:{}.", searchRequestBuilder);
+			LOGGER.debug("elastic statistic req param:{}.", searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().get();
-			LOGGER.info("elastic statistic ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
+			LOGGER.debug("elastic statistic ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
 		} catch (Exception ex) {
 			LOGGER.error("elastic statistic error,msg :" + ex.getMessage(), ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "elastic error:" + ex.getMessage());
@@ -89,7 +89,7 @@ public class ESStatisticServiceImpl {
 
 		try {
 			final Map<String, Number> statisticResult = esStatisticResponseHandler.handler(searchResponse.getAggregations());
-			LOGGER.error("escenter statistic response:{}.", statisticResult);
+			LOGGER.debug("escenter statistic response:{}.", statisticResult);
 			dataResult.setResult(statisticResult);
 			return dataResult;
 		} catch (Exception ex) {
@@ -122,9 +122,9 @@ public class ESStatisticServiceImpl {
 
 		SearchResponse searchResponse;
 		try {
-			LOGGER.info("elastic collapse ,rep param:{}.", searchRequestBuilder);
+			LOGGER.debug("elastic collapse ,rep param:{}.", searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().get();
-			LOGGER.info("elastic collapse ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
+			LOGGER.debug("elastic collapse ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
 		} catch (Exception ex) {
 			LOGGER.error("elastic collapse error,msg :" + ex.getMessage(), ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "elastic error:" + ex.getMessage());
@@ -135,7 +135,7 @@ public class ESStatisticServiceImpl {
 			final Map<String, ESResponse> handlerResult = collapseResponseHandler.handler(searchResponse, esObject);
 			handlerResult.put("searchResult", handlerResponse);
 			dataResult.setResult(handlerResult);
-			LOGGER.info("escenter collapse response , req param:{}, response:{}.", esObject, dataResult);
+			LOGGER.debug("escenter collapse response , req param:{}, response:{}.", esObject, dataResult);
 			return dataResult;
 		} catch (Exception ex) {
 			LOGGER.error("escenter collapse response handle error,msg :" + ex.getMessage(), ex);

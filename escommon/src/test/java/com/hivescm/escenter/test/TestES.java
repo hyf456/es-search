@@ -1,5 +1,6 @@
 package com.hivescm.escenter.test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -283,6 +284,70 @@ public class TestES {
 
 		DataResult<Map<String, Number>> result = esStatisticService.statisticByConditions(esObject);
 		System.out.println("--->>>>>" + result);
+		System.out.println(result.getResult());
+	}
+
+	@Test
+	public void test_not_in() {
+		QueryESObject queryESObject = new QueryESObject(SYSTEM_NAME, INDEX_NAME, TYPE_NAME);
+		List<SearchCondition> conditions = new ArrayList<>();
+		SearchCondition searchCondition = new SearchCondition();
+		searchCondition.setFieldName("age");
+		searchCondition.setConditionExpression(ConditionExpressionEnum.NOT_IN);
+		searchCondition.setFieldValues(new Object[] { 90, 88, 55 });
+		conditions.add(searchCondition);
+		queryESObject.setSearchConditions(conditions);
+		DataResult<ESResponse> dataResult = esSearchService.esQuery(queryESObject);
+		System.out.println(dataResult.toJSON());
+	}
+
+	@Test
+	public void test_between() {
+		QueryESObject queryESObject = new QueryESObject(SYSTEM_NAME, "tms-dispatcher", "tms-dispatcher-list");
+		List<SearchCondition> conditions = new ArrayList<>();
+		SearchCondition searchCondition = new SearchCondition();
+		searchCondition.setFieldName("createTime");
+		searchCondition.setConditionExpression(ConditionExpressionEnum.BETWEEN);
+		searchCondition.setMinValue("1513148665190");
+		searchCondition.setMaxValue("1513148665199");
+		conditions.add(searchCondition);
+		queryESObject.setSearchConditions(conditions);
+		DataResult<ESResponse> dataResult = esSearchService.esQuery(queryESObject);
+		Assert.assertTrue(dataResult.isSuccess());
+		System.out.println(dataResult.getResult().toString());
+	}
+
+	@Test
+	public void test_tms_api() {
+		QueryESObject queryESObject = new QueryESObject(SYSTEM_NAME, "tms-waybill", "tms-waybill-list");
+		List<SearchCondition> conditions = new ArrayList<>();
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("createTime");
+			searchCondition.setConditionExpression(ConditionExpressionEnum.BETWEEN);
+			searchCondition.setMinValue("1513075779030");
+			searchCondition.setMaxValue("1513075779033");
+			conditions.add(searchCondition);
+		}
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("companyId");
+			searchCondition.setSingleValue(200);
+			searchCondition.setConditionExpression(ConditionExpressionEnum.EQUAL);
+			conditions.add(searchCondition);
+		}
+		{
+			SearchCondition searchCondition = new SearchCondition();
+			searchCondition.setFieldName("invoiceCompany");
+			searchCondition.setFieldValues(new String[]{"可口可乐1"});
+			searchCondition.setConditionExpression(ConditionExpressionEnum.NOT_IN);
+			conditions.add(searchCondition);
+		}
+		queryESObject.setSearchConditions(conditions);
+		DataResult<ESResponse> dataResult = esSearchService.esQuery(queryESObject);
+		System.out.println(dataResult);
+		Assert.assertTrue(dataResult.isSuccess());
+		System.out.println(dataResult.getResult().toString());
 	}
 
 	private SaveESObject newSaveESObject() {
