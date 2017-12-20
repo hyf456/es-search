@@ -53,11 +53,10 @@ public class SerchSourceBuilder {
 
 	public PageCondition getPage(PageCondition pageCondition) {
 		if (null == pageCondition) {
-			// pageCondition = new PageCondition();
-			// pageCondition.setPageSize(1000);
-			// pageCondition.setCurrentPage(1);
-			// return pageCondition;
-			return null;
+			pageCondition = new PageCondition();
+			pageCondition.setPageSize(1000);
+			pageCondition.setCurrentPage(1);
+			return pageCondition;
 		}
 
 		Integer currentPage = pageCondition.getCurrentPage();
