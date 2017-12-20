@@ -32,8 +32,6 @@ import org.elasticsearch.script.Script;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -60,6 +58,7 @@ import com.hivescm.escenter.core.condition.QueryConditionBuilder;
 import com.hivescm.escenter.core.condition.SerchSourceBuilder;
 import com.hivescm.escenter.core.groovy.NestedUpdateGroovyScritpBuilder;
 import com.hivescm.escenter.core.handler.ESQueryResponseHandler;
+import com.hivescm.search.log.SearchLogger;
 
 /**
  * Created by DongChunfu on 2017/7/26
@@ -68,7 +67,6 @@ import com.hivescm.escenter.core.handler.ESQueryResponseHandler;
  */
 @Service(value = "esNestedSearchService")
 public class ESNestedSearchService {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ESNestedSearchService.class);
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	@Value(value = "${escenter.excute.explain:false}")
@@ -109,15 +107,15 @@ public class ESNestedSearchService {
 	public DataResult<Boolean> save(SaveESObject esObject) {
 		try {
 			final IndexRequestBuilder indexRequest = getIndexRequest(esObject);
-			LOGGER.debug("es service index request, param:{}.", indexRequest);
+			SearchLogger.log(indexRequest);
 			if (esObject.isRefresh()) {
 				indexRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
 			IndexResponse indexResponse = indexRequest.execute().get();
-			LOGGER.debug("es service index response, response:{}, param:{}.", indexResponse, esObject);
+			SearchLogger.log(indexResponse);
 			return DataResult.success(DocWriteResponse.Result.CREATED == indexResponse.getResult(), Boolean.class);
 		} catch (Exception ex) {
-			LOGGER.error("es service index error, param:" + esObject, ex);
+			SearchLogger.error("save", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 		}
 	}
@@ -131,18 +129,18 @@ public class ESNestedSearchService {
 	public DataResult<Boolean> update(UpdateESObject esObject) {
 		final UpdateRequestBuilder updateRequest = esObject.nestedUpdate() ? getNestedListUpdateRequest(esObject)
 				: getUpdateRequest(esObject);
+		SearchLogger.log(updateRequest);
 		try {
-			LOGGER.debug("es service update request, param:{}.", updateRequest);
 			updateRequest.setDetectNoop(false);
 			if (esObject.isRefresh()) {
 				updateRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
 			UpdateResponse updateResponse = updateRequest.execute().get();
-			LOGGER.debug("es service update response, response:{}, param:{}.", updateResponse, esObject);
+			SearchLogger.log(updateResponse);
 			final DocWriteResponse.Result result = updateResponse.getResult();
 			return DataResult.success(DocWriteResponse.Result.UPDATED == result, Boolean.class);
 		} catch (Exception ex) {
-			LOGGER.error("es service update failed,param:" + esObject, ex);
+			SearchLogger.error("update", ex);
 			final String message = ex.getMessage();
 			if (message != null && message.contains("document missing")) {
 				return DataResult.faild(ESErrorCode.DOC_NOT_EXIST_ERROR_CODE, "更新文档不存在");
@@ -168,27 +166,27 @@ public class ESNestedSearchService {
 
 			groupConditionBuilder.build(searchRequestBuilder, esObject);
 			// searchRequestBuilder 使用 Gson 回环
-			LOGGER.debug("es service query request, param:{}.", searchRequestBuilder);
+			SearchLogger.log(searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().actionGet();
-			LOGGER.debug("es service query response, reponse:{},param:{}.", searchResponse, searchRequestBuilder);
+			SearchLogger.log(searchResponse);
 
 		} catch (IndexNotFoundException infex) {
-			LOGGER.error("es service query error, param:" + esObject, infex);
+			SearchLogger.error("query", infex);
 			return DataResult.faild(ESErrorCode.INDEX_NOT_EXIST_ERROR_CODE, "索引不存在");
 		} catch (SearchPhaseExecutionException spex) {
-			LOGGER.error("es service query error, param:" + esObject, spex);
+			SearchLogger.error("query", spex);
 			return DataResult.faild(ESErrorCode.QUERY_PHASE_ERROR_CODE, "搜索语法异常");
 		} catch (Exception ex) {
-			LOGGER.error("es service query error, param:" + esObject, ex);
+			SearchLogger.error("query", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "搜索引擎异常");
 		}
 
 		try {
 			final ESResponse handlerResponse = esQueryResponseHandler.handler(esObject, searchResponse);
-			LOGGER.debug("es center query handle result:{}.", handlerResponse);
+			SearchLogger.log(handlerResponse);
 			return DataResult.success(handlerResponse, ESResponse.class);
 		} catch (Exception ex) {
-			LOGGER.error("escenter query handle error, param:" + esObject, ex);
+			SearchLogger.error("query", ex);
 			return DataResult.faild(ESErrorCode.ESCENTER_ERROR_CODE, "ecMsg:" + ex.getMessage());
 		}
 	}
@@ -202,11 +200,10 @@ public class ESNestedSearchService {
 	public DataResult<Boolean> delete(final DeleteESObject esObject) {
 		final DeleteRequestBuilder deleteRequest = getDeleteRequest(esObject);
 		try {
-			LOGGER.debug("elastic delete request param:{}.", deleteRequest);
+			SearchLogger.log(deleteRequest);
 			deleteRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			DeleteResponse deleteResponse = deleteRequest.execute().actionGet();
-			LOGGER.debug("elastic delete response,response:{} ,param:{}.", deleteResponse, esObject);
-
+			SearchLogger.log(deleteRequest);
 			if (DocWriteResponse.Result.DELETED == deleteResponse.getResult()) {
 				return DataResult.success(Boolean.TRUE, Boolean.class);
 			}
@@ -215,7 +212,7 @@ public class ESNestedSearchService {
 			}
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "ES返回结果不在预期范围内");
 		} catch (Exception ex) {
-			LOGGER.error("elastic delete error,req param:" + deleteRequest, ex);
+			SearchLogger.error("delete", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 		}
 
@@ -238,12 +235,12 @@ public class ESNestedSearchService {
 			bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 		}
 		try {
-			LOGGER.debug("es service bulk index request param:{}.", bulkRequestBuilder);
+			SearchLogger.log(bulkRequestBuilder);
 			BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-			LOGGER.debug("es service bulk index response, param:{},response:{}.", obj, bulkResponse);
+			SearchLogger.log(bulkResponse);
 			return DataResult.success(!bulkResponse.hasFailures(), Boolean.class);
 		} catch (Exception ex) {
-			LOGGER.error("es serivce bulk index error,req param:" + bulkRequestBuilder, ex);
+			SearchLogger.error("batchSave", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 		}
 	}
@@ -264,19 +261,19 @@ public class ESNestedSearchService {
 			try {
 				bulkRequestBuilder.add(getUpdateRequest(updateDatas.get(i)));
 				if (i % bulkSize == 0 || (i + 1) == size) {
-					LOGGER.debug("es service bulk update request param:{}.", bulkRequestBuilder);
+					SearchLogger.log(bulkRequestBuilder);
 					if (obj.isRefresh()) {
 						bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 					}
 					final BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-					LOGGER.debug("es service batch update response, param:{},response:{}.", obj, bulkResponse);
+					SearchLogger.log(bulkResponse);
 					if (bulkResponse.hasFailures()) {
 						result = false;
 					}
 					// bulkRequestBuilder = esClient.prepareBulk();
 				}
 			} catch (Exception ex) {
-				LOGGER.error("elastic bulk update error,req param:" + bulkRequestBuilder, ex);
+				SearchLogger.error("batchUpdate", ex);
 				return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 			}
 		}
@@ -298,19 +295,19 @@ public class ESNestedSearchService {
 			try {
 				bulkRequestBuilder.add(getDeleteRequest(deleteDatas.get(i)));
 				if (i % bulkSize == 0 || (i + 1) == size) {
-					LOGGER.debug("es service bulk delete request param:{}.", bulkRequestBuilder);
+					SearchLogger.log(bulkRequestBuilder);
 					if (obj.isRefresh()) {
 						bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 					}
 					final BulkResponse bulkResponse = bulkRequestBuilder.execute().actionGet();
-					LOGGER.debug("es service batch delete response, param:{},response:{}.", obj, bulkResponse);
+					SearchLogger.log(bulkResponse);
 					if (bulkResponse.hasFailures()) {
 						result = false;
 					}
 					// bulkRequestBuilder = esClient.prepareBulk();
 				}
 			} catch (Exception ex) {
-				LOGGER.error("elastic batch delete error,req param:" + bulkRequestBuilder, ex);
+				SearchLogger.error("batchDelete", ex);
 				return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage());
 			}
 
@@ -331,7 +328,7 @@ public class ESNestedSearchService {
 		try {
 			final List<String> docIds = getAccordConditionDocIds(esObject.getConditions(), esObject);
 			if (CollectionUtils.isEmpty(docIds)) {
-				LOGGER.debug("update by condition not find any docs ,req param ：{}", esObject);
+				SearchLogger.log(bulkRequestBuilder);
 				dataResult.setResult(Boolean.TRUE);
 				return dataResult;
 			}
@@ -346,11 +343,11 @@ public class ESNestedSearchService {
 			if (esObject.isRefresh()) {
 				bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
-			LOGGER.debug("elastic update by condition request param:{}.", bulkRequestBuilder);
+			SearchLogger.log(bulkRequestBuilder);
 			bulkResponse = bulkRequestBuilder.execute().get();
-			LOGGER.debug("elastic update by condition response, param:{},response:{}.", esObject, bulkResponse);
+			SearchLogger.log(bulkResponse);
 		} catch (Exception ex) {
-			LOGGER.error("elastic update by condition error,req param:" + bulkRequestBuilder, ex);
+			SearchLogger.error("conditionUpdate", ex);
 			dataResult.setStatus(new Status(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage()));
 			return dataResult;
 		}
@@ -372,7 +369,7 @@ public class ESNestedSearchService {
 		try {
 			final List<String> docIds = getAccordConditionDocIds(esObject.getConditions(), esObject);
 			if (CollectionUtils.isEmpty(docIds)) {
-				LOGGER.debug("elastic delete by condition not find any docs ,req param ：{}", esObject);
+				SearchLogger.log(bulkRequestBuilder);
 				dataResult.setResult(Boolean.TRUE);
 				return dataResult;
 			}
@@ -385,11 +382,11 @@ public class ESNestedSearchService {
 			if (esObject.isRefresh()) {
 				bulkRequestBuilder.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
 			}
-			LOGGER.debug("elastic delete by condition  request param:{}.", bulkRequestBuilder);
+			SearchLogger.log(bulkRequestBuilder);
 			bulkResponse = bulkRequestBuilder.execute().get();
-			LOGGER.debug("elastic delete by condition response, param:{},response:{}.", esObject, bulkResponse);
+			SearchLogger.log(bulkResponse);
 		} catch (Exception ex) {
-			LOGGER.error("elastic delete by condition error,req param:" + bulkRequestBuilder, ex);
+			SearchLogger.error("conditionDelete", ex);
 			dataResult.setStatus(new Status(ESErrorCode.ELASTIC_ERROR_CODE, "esMsg:" + ex.getMessage()));
 			return dataResult;
 		}
@@ -419,12 +416,11 @@ public class ESNestedSearchService {
 		queryConditionBuilder.builde(searchRequestBuilder, queryESObject);
 		searchRequestBuilder.setScroll(new Scroll(TimeValue.timeValueSeconds(scrollTime)));
 
-		LOGGER.debug("es service quere by condition  request param:{}.", searchRequestBuilder);
+		SearchLogger.log(searchRequestBuilder);
 		final SearchResponse searchResponse = searchRequestBuilder.execute().get();
-		LOGGER.debug("es service quere by condition  response, param:{},response:{}.", conditions, searchResponse);
+		SearchLogger.log(searchResponse);
 		final SearchHits hits = searchResponse.getHits();
 		if (hits.getHits().length == 0) {
-			LOGGER.debug("es service quere by condition not find documents , param:{}.", conditions);
 			return null;
 		}
 
@@ -433,7 +429,6 @@ public class ESNestedSearchService {
 			docIds.add(hit.getId());
 		}
 		scrollSearch(searchResponse.getScrollId(), docIds, new ArrayList<>());
-		LOGGER.debug("es service quere by condition find documents , param:{},docIds:{}.", conditions, docIds);
 		return docIds;
 	}
 
@@ -473,10 +468,8 @@ public class ESNestedSearchService {
 	private void closeScrollWindow(List<String> scrollIds) {
 		final ClearScrollRequestBuilder clearScrollRequestBuilder = esClient.prepareClearScroll();
 		clearScrollRequestBuilder.setScrollIds(scrollIds);
-		LOGGER.debug("es clear scroll windows ,scrollIds:{}.", scrollIds);
 		final ClearScrollResponse clearScrollResponse = clearScrollRequestBuilder.execute().actionGet();
-		LOGGER.debug("es clear scroll windows ,scrollIds:{},clearResponse:{}.", scrollIds,
-				clearScrollResponse.isSucceeded());
+		SearchLogger.log(clearScrollResponse);
 	}
 
 	/**
@@ -527,7 +520,7 @@ public class ESNestedSearchService {
 			dataBytes = OBJECT_MAPPER.writeValueAsBytes(esObject.getDataMap());
 		} catch (JsonProcessingException e) {
 			// never hapened
-			LOGGER.error("", e);
+			SearchLogger.error("", e);
 		}
 
 		IndexRequestBuilder indexRequestBuilder = esClient.prepareIndex().setIndex(esObject.getIndexName())

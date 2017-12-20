@@ -12,8 +12,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.collapse.CollapseBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.hivescm.common.domain.DataResult;
@@ -29,6 +27,7 @@ import com.hivescm.escenter.core.condition.SerchSourceBuilder;
 import com.hivescm.escenter.core.handler.CollapseResponseHandler;
 import com.hivescm.escenter.core.handler.ESQueryResponseHandler;
 import com.hivescm.escenter.core.handler.ESStatisticResponseHandler;
+import com.hivescm.search.log.SearchLogger;
 
 /**
  * Created by DongChunfu on 2017/8/30
@@ -37,7 +36,8 @@ import com.hivescm.escenter.core.handler.ESStatisticResponseHandler;
  */
 @Component(value = "esStatisticService")
 public class ESStatisticServiceImpl {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ESStatisticServiceImpl.class);
+	// private static final Logger LOGGER =
+	// LoggerFactory.getLogger(ESStatisticServiceImpl.class);
 	@Resource
 	private QueryConditionBuilder queryConditionBuilder;
 
@@ -79,21 +79,20 @@ public class ESStatisticServiceImpl {
 
 		SearchResponse searchResponse;
 		try {
-			LOGGER.debug("elastic statistic req param:{}.", searchRequestBuilder);
+			SearchLogger.log(searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().get();
-			LOGGER.debug("elastic statistic ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
+			SearchLogger.log(searchResponse);
 		} catch (Exception ex) {
-			LOGGER.error("elastic statistic error,msg :" + ex.getMessage(), ex);
+			SearchLogger.error("statisticByConditions", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "elastic error:" + ex.getMessage());
 		}
 
 		try {
 			final Map<String, Number> statisticResult = esStatisticResponseHandler.handler(searchResponse.getAggregations());
-			LOGGER.debug("escenter statistic response:{}.", statisticResult);
 			dataResult.setResult(statisticResult);
 			return dataResult;
 		} catch (Exception ex) {
-			LOGGER.error("escenter statistic error,msg :" + ex.getMessage(), ex);
+			SearchLogger.error("escenter statistic error", ex);
 			return DataResult.faild(ESErrorCode.ESCENTER_ERROR_CODE, "escenter error:" + ex.getMessage());
 		}
 	}
@@ -122,11 +121,11 @@ public class ESStatisticServiceImpl {
 
 		SearchResponse searchResponse;
 		try {
-			LOGGER.debug("elastic collapse ,rep param:{}.", searchRequestBuilder);
+			SearchLogger.log(searchRequestBuilder);
 			searchResponse = searchRequestBuilder.execute().get();
-			LOGGER.debug("elastic collapse ,rep param:{}, response:{}.", searchRequestBuilder, searchResponse);
+			SearchLogger.log(searchResponse);
 		} catch (Exception ex) {
-			LOGGER.error("elastic collapse error,msg :" + ex.getMessage(), ex);
+			SearchLogger.error("elastic collapse error", ex);
 			return DataResult.faild(ESErrorCode.ELASTIC_ERROR_CODE, "elastic error:" + ex.getMessage());
 		}
 
@@ -135,10 +134,9 @@ public class ESStatisticServiceImpl {
 			final Map<String, ESResponse> handlerResult = collapseResponseHandler.handler(searchResponse, esObject);
 			handlerResult.put("searchResult", handlerResponse);
 			dataResult.setResult(handlerResult);
-			LOGGER.debug("escenter collapse response , req param:{}, response:{}.", esObject, dataResult);
 			return dataResult;
 		} catch (Exception ex) {
-			LOGGER.error("escenter collapse response handle error,msg :" + ex.getMessage(), ex);
+			SearchLogger.error("escenter collapse response handle error", ex);
 			return DataResult.faild(ESErrorCode.ESCENTER_ERROR_CODE, "escenter error:" + ex.getMessage());
 		}
 	}

@@ -33,8 +33,6 @@ import com.hivescm.escenter.convert.ESSearchConvertor;
  */
 @Component(value = "esQueryResponseHandler")
 public class ESQueryResponseHandler {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ESQueryResponseHandler.class);
-
 	public ESResponse handler(QueryESObject esObject, final SearchResponse searchResponse) {
 		ESResponse esResponse = new ESResponse();
 		esResponse.setIndexName(esObject.getIndexName());
@@ -58,9 +56,9 @@ public class ESQueryResponseHandler {
 	/**
 	 * 检索文档处理
 	 *
-	 * @param esObject       检索请求参数
+	 * @param esObject 检索请求参数
 	 * @param searchResponse 检索请求响应结果
-	 * @param esResponse     ES 检索响应
+	 * @param esResponse ES 检索响应
 	 */
 	private void documentHandler(QueryESObject esObject, final SearchResponse searchResponse, ESResponse esResponse) {
 		final SearchHits hits = searchResponse.getHits();
@@ -101,11 +99,12 @@ public class ESQueryResponseHandler {
 	/**
 	 * 检索文档处理
 	 *
-	 * @param esObject       检索请求参数
+	 * @param esObject 检索请求参数
 	 * @param searchResponse 检索请求响应结果
-	 * @param esResponse     ES 检索响应
+	 * @param esResponse ES 检索响应
 	 */
-	private void documentHandler(CollapseQueryObject esObject, final SearchResponse searchResponse, ESResponse esResponse) {
+	private void documentHandler(CollapseQueryObject esObject, final SearchResponse searchResponse,
+			ESResponse esResponse) {
 		final SearchHits hits = searchResponse.getHits();
 		if (null == hits) {
 			return;
@@ -144,12 +143,12 @@ public class ESQueryResponseHandler {
 	/**
 	 * 聚合结果分析处理
 	 *
-	 * @param esResponse     ES 通用响应结果
-	 * @param esObject       ES 通用查询参数
+	 * @param esResponse ES 通用响应结果
+	 * @param esObject ES 通用查询参数
 	 * @param searchResponse ES 查询响应结果
 	 */
 	private void aggregationHandler(ESResponse esResponse, QueryESObject esObject, final SearchResponse searchResponse) {
-		if (!esObject.groupSearch()) {//没有进行分组查询
+		if (!esObject.groupSearch()) {// 没有进行分组查询
 			return;
 		}
 		Map<String, List<Map<String, Object>>> countCesult = new HashMap<>();
@@ -160,14 +159,13 @@ public class ESQueryResponseHandler {
 	/**
 	 * 递归到最后的一个聚合桶结束
 	 *
-	 * @param aggregations  聚合分析结果
-	 * @param resultKey     分组key
-	 * @param countCesult   聚合结果解析
+	 * @param aggregations 聚合分析结果
+	 * @param resultKey 分组key
+	 * @param countCesult 聚合结果解析
 	 * @param functionNames 聚合函数名字
 	 */
 	private void aggregation(final Aggregations aggregations, String resultKey,
-			Map<String, List<Map<String, Object>>> countCesult,
-			String[] functionNames) {
+			Map<String, List<Map<String, Object>>> countCesult, String[] functionNames) {
 		if (aggregations == null) {
 			return;
 		}
@@ -201,20 +199,17 @@ public class ESQueryResponseHandler {
 	}
 
 	/**
-	 * 获取聚合结果，进行统一封装
-	 * //@param functionNames 检索提供的函数别名
-	 * //@param innerAggregations es 聚合底层聚合结果
+	 * 获取聚合结果，进行统一封装 //@param functionNames 检索提供的函数别名 //@param innerAggregations
+	 * es 聚合底层聚合结果
 	 *
-	 * @param key         分组组合key
+	 * @param key 分组组合key
 	 * @param countCesult 统一统计结果
 	 */
-	private void wrapCountResult(Aggregation agregation, String key,
-			Map<String, List<Map<String, Object>>> countCesult) {
+	private void wrapCountResult(Aggregation agregation, String key, Map<String, List<Map<String, Object>>> countCesult) {
 
-		if (agregation instanceof NumericMetricsAggregation.SingleValue) {// max ,min,sum
-			final NumericMetricsAggregation.SingleValue numericProperty = (NumericMetricsAggregation
-					.SingleValue)
-					agregation;
+		if (agregation instanceof NumericMetricsAggregation.SingleValue) {// max
+																																			// ,min,sum
+			final NumericMetricsAggregation.SingleValue numericProperty = (NumericMetricsAggregation.SingleValue) agregation;
 
 			final String functionName = numericProperty.getName();
 			final double value = numericProperty.value();
@@ -236,7 +231,7 @@ public class ESQueryResponseHandler {
 	 * 将es搜索返回属性，封装成嵌套map格式，主要针对具有引用类型数据时使用
 	 *
 	 * @param hitField es 扁平存储属性
-	 * @param rootMap  es 检索结果响应数据
+	 * @param rootMap es 检索结果响应数据
 	 */
 	private void nestedMap(final SearchHitField hitField, Map rootMap) {
 		final String fieldName = hitField.getName();
