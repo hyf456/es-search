@@ -6,16 +6,12 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,46 +101,6 @@ public class TestSearch {
 		System.out.println(hits.getTotalHits());
 		for (int i = 0; i < hits.totalHits; i++) {
 			System.out.println(hits.getHits()[i].getSourceAsString());
-		}
-	}
-
-	@Test
-	public void test_sync_index_data() {
-		String new_index = "my_index_v2";
-		test_del_index(new_index);
-		MappingMetaData metaData = indexAdmin.loadIndexMeta("my_index_v1", "employee");
-		try {
-			String type = metaData.type();
-			Map<String, Object> data = metaData.getSourceAsMap();
-			Map<String, Object> properties = (Map<String, Object>) data.get("properties");
-			Map<String, Object> ageStruct = (Map<String, Object>) properties.get("age");
-			ageStruct.put("type", "keyword");
-			CreateIndexResponse createIndexResponse = esClient.admin().indices().prepareCreate(new_index)
-					.addMapping(type, data).get();
-			Assert.assertTrue(createIndexResponse.isAcknowledged());
-			System.out.println(createIndexResponse.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("创建索引失败");
-		}
-
-		ScanDocuments scanDocuments = new ScanDocuments("my_index_v1", "employee", 3);
-		scanDocuments.start(esClient);
-		while (scanDocuments.hasNext()) {
-			SearchHit hit = scanDocuments.next();
-			System.out.println(hit.getId() + "-" + hit.getSourceAsMap());
-			IndexResponse response = esClient.prepareIndex(new_index, "employee").setId(hit.getId())
-					.setSource(hit.getSource()).get();
-			System.out.println(response.getResult());
-		}
-	}
-
-	private void test_del_index(String index) {
-		try {
-			indexAdmin.deleteIndex(index);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail("删除索引出错");
 		}
 	}
 }

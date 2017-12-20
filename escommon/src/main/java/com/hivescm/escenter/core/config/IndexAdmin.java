@@ -10,12 +10,6 @@ import java.util.concurrent.ExecutionException;
 import javax.annotation.PostConstruct;
 
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
@@ -119,25 +113,6 @@ public class IndexAdmin {
 		System.out.println("******************dump es index document******************");
 	}
 
-	public boolean isExistsIndex(String index) throws InterruptedException, ExecutionException {
-		IndicesExistsResponse response = client.admin().indices().exists(new IndicesExistsRequest(index)).get();
-		return response.isExists();
-	}
-
-	public boolean deleteIndex(String index) throws InterruptedException, ExecutionException {
-		if (isExistsIndex(index)) {
-			DeleteIndexResponse deleteResponse = client.admin().indices().delete(new DeleteIndexRequest(index)).get();
-			return deleteResponse.isAcknowledged();
-		} else {
-			return false;
-		}
-	}
-
-	public boolean createIndex(String index) throws InterruptedException, ExecutionException {
-		CreateIndexResponse response = client.admin().indices().create(new CreateIndexRequest(index)).get();
-		return response.isAcknowledged();
-	}
-
 	private void register(String index, String type, String mapping) {
 		if (mapping != null) {
 			String key = generatedKey(index, type);
@@ -146,28 +121,5 @@ public class IndexAdmin {
 			CACHE.put(key, helper);
 			LOGGER.info("register or update index:" + index + "|type:" + type);
 		}
-	}
-
-	/**
-	 * 获取索引元数据信息
-	 * 
-	 * @param index
-	 * @param type
-	 * @return
-	 */
-	public MappingMetaData loadIndexMeta(String index, String type) {
-		ClusterStateResponse response = client.admin().cluster().prepareState().execute().actionGet();
-		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
-		if (immutableOpenMap != null) {
-			IndexMetaData metaData = immutableOpenMap.get(index);
-			if (metaData != null) {
-				ImmutableOpenMap<String, MappingMetaData> mappings = metaData.getMappings();
-				if (mappings != null) {
-					return mappings.get(type);
-				}
-			}
-		}
-		LOGGER.error("获取ES数据结构失败 index:" + index + "|type:" + type);
-		return null;
 	}
 }
