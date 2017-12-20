@@ -7,7 +7,7 @@
 
     <!-- 注解扫描包 -->
     <context:component-scan base-package="com.hivescm.escenter"/>
-
+	<context:component-scan base-package="com.hivescm.search"/>
     <bean id="property" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <array>

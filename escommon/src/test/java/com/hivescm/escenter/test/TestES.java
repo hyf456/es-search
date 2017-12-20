@@ -190,6 +190,7 @@ public class TestES {
 		esObject.setSearchConditions(list);
 
 		DataResult<ESResponse> result = esSearchService.esQuery(esObject);
+		Assert.assertTrue(result.isSuccess());
 		System.out.println("--->>>>>" + result);
 	}
 
