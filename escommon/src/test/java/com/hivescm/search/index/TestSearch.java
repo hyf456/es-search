@@ -99,7 +99,7 @@ public class TestSearch {
 				).get();
 		SearchHits hits = response.getHits();
 		System.out.println(hits.getTotalHits());
-		for (int i = 0; i < hits.totalHits; i++) {
+		for (int i = 0; i < hits.getHits().length; i++) {
 			System.out.println(hits.getHits()[i].getSourceAsString());
 		}
 	}
