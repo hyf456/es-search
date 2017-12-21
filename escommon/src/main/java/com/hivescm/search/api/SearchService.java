@@ -1,7 +1,11 @@
 package com.hivescm.search.api;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.springframework.stereotype.Component;
@@ -21,5 +25,23 @@ public class SearchService {
 	public long countAll(String index, String type) {
 		SearchResponse response = client.prepareSearch(index).setTypes(type).setSize(1).get();
 		return response.getHits().totalHits;
+	}
+
+	/**
+	 * 批量保存
+	 * 
+	 * @param batchList
+	 * @return
+	 */
+	public boolean batchSave(List<IndexRequestBuilder> batchList) {
+		if (batchList.size() > 0) {
+			BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
+			for (IndexRequestBuilder requestBuilder : batchList) {
+				bulkRequestBuilder.add(requestBuilder);
+			}
+			return !bulkRequestBuilder.get().hasFailures();
+		} else {
+			return false;
+		}
 	}
 }
