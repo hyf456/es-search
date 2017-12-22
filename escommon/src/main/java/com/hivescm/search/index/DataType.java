@@ -11,5 +11,26 @@ public enum DataType {
 	//
 	DATE, IP, BOOLEAN,
 	// number类型
-	LONG, INTEGER, SHORT, BYTE, DOUBLE, FLOAT
+	LONG, INTEGER, SHORT, BYTE, DOUBLE, FLOAT,
+	// nested object mapping
+	NESTED;
+
+//	{
+//	  "mappings": {
+//	    "blogpost": {
+//	      "properties": {
+//	        "comments": {
+//	          "type": "nested", 
+//	          "properties": {
+//	            "name":    { "type": "string"  },
+//	            "comment": { "type": "string"  },
+//	            "age":     { "type": "short"   },
+//	            "stars":   { "type": "short"   },
+//	            "date":    { "type": "date"    }
+//	          }
+//	        }
+//	      }
+//	    }
+//	  }
+//	}
 }

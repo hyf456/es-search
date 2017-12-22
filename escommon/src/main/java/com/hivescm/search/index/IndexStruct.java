@@ -46,6 +46,10 @@ public class IndexStruct {
 		return GsonSerialize.INSTANCE.encode(this);
 	}
 
+	public Map<String, Object> getIndexAsMap() {
+		return GsonSerialize.INSTANCE.decode(getIndexJson(), Map.class);
+	}
+
 	public static class IndexType {
 		public Map<String, Map<String, Object>> properties = new HashMap<>();
 	}

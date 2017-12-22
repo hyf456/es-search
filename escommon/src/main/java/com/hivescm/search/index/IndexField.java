@@ -284,4 +284,9 @@ public class IndexField {
 		return this;
 	}
 
+	public IndexField put(String key, Object value) {
+		this.map.put(key, value);
+		return this;
+	}
+
 }
