@@ -31,10 +31,6 @@ public class TestSyncUtils {
 	@Test
 	public void test_sync_index() {
 		try {
-			TransportClient devClient = SyncUtils.createEsClient(
-					"192.168.177.132:9300,192.168.177.142:9300,192.168.177.134:9300", "elastic", "changeme", "escenter_dev");
-			TransportClient testClient = SyncUtils.createEsClient("192.168.177.11:9300,192.168.177.226:9300", "elastic",
-					"changeme", "real-test");
 			SyncUtils.sync_index_struct(devClient, testClient, new SyncIndex() {
 
 				@Override
