@@ -1,11 +1,9 @@
 package com.hivescm.escenter.core.config;
 
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 import javax.annotation.PostConstruct;
 
@@ -91,27 +89,27 @@ public class IndexAdmin {
 		return index + ":" + type;
 	}
 
-	/**
-	 * dump ES索引结构
-	 * 
-	 * @throws UnknownHostException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 */
-	public void dump_es_index() throws UnknownHostException, InterruptedException, ExecutionException {
-		System.out.println("******************dump es index document******************");
-		ClusterStateResponse response = client.admin().cluster().prepareState().execute().actionGet();
-		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
-		immutableOpenMap.forEach((entity) -> {
-			String index = entity.key;
-			if (index.startsWith("tms")) {// 只迁移tms开头的索引
-				entity.value.getMappings().forEach((cursor) -> {
-					// TestEnvConfig.createIndex(index, cursor);
-				});
-			}
-		});
-		System.out.println("******************dump es index document******************");
-	}
+//	/**
+//	 * dump ES索引结构
+//	 * 
+//	 * @throws UnknownHostException
+//	 * @throws ExecutionException
+//	 * @throws InterruptedException
+//	 */
+//	public void dump_es_index() throws UnknownHostException, InterruptedException, ExecutionException {
+//		System.out.println("******************dump es index document******************");
+//		ClusterStateResponse response = client.admin().cluster().prepareState().execute().actionGet();
+//		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
+//		immutableOpenMap.forEach((entity) -> {
+//			String index = entity.key;
+//			if (index.startsWith("tms")) {// 只迁移tms开头的索引
+//				entity.value.getMappings().forEach((cursor) -> {
+//					// TestEnvConfig.createIndex(index, cursor);
+//				});
+//			}
+//		});
+//		System.out.println("******************dump es index document******************");
+//	}
 
 	private void register(String index, String type, String mapping) {
 		if (mapping != null) {
