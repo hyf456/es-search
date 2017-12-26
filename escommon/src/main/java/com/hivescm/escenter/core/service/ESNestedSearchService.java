@@ -201,7 +201,9 @@ public class ESNestedSearchService {
 		final DeleteRequestBuilder deleteRequest = getDeleteRequest(esObject);
 		try {
 			SearchLogger.log(deleteRequest);
-			deleteRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+			if(esObject.isRefresh()){
+				deleteRequest.setRefreshPolicy(RefreshPolicy.WAIT_UNTIL);
+			}
 			DeleteResponse deleteResponse = deleteRequest.execute().actionGet();
 			SearchLogger.log(deleteRequest);
 			if (DocWriteResponse.Result.DELETED == deleteResponse.getResult()) {

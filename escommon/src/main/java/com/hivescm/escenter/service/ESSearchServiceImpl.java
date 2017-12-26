@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.hivescm.common.domain.DataResult;
@@ -36,128 +37,138 @@ import com.hivescm.escenter.core.validator.ESUpdateValidator;
 @Component
 public class ESSearchServiceImpl implements ESSearchService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ESSearchServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ESSearchServiceImpl.class);
 
-    @Autowired
-    private ESSaveValidator esSaveValidator;
+	@Autowired
+	private ESSaveValidator esSaveValidator;
 
-    @Autowired
-    private ESQueryValidator esQueryValidator;
+	@Autowired
+	private ESQueryValidator esQueryValidator;
 
-    @Autowired
-    private ESDeleteValidator esDeleteValidator;
+	@Autowired
+	private ESDeleteValidator esDeleteValidator;
 
-    @Autowired
-    private ESUpdateValidator esUpdateValidator;
+	@Autowired
+	private ESUpdateValidator esUpdateValidator;
 
-    @Autowired
-    private ESBatchSaveValidator esBatchSaveValidator;
+	@Autowired
+	private ESBatchSaveValidator esBatchSaveValidator;
 
-    @Autowired
-    private ESBatchUpdateValidator esBatchUpdateValidator;
+	@Autowired
+	private ESBatchUpdateValidator esBatchUpdateValidator;
 
-    @Autowired
-    private ESBatchDeleteValidator esBatchDeleteValidator;
+	@Autowired
+	private ESBatchDeleteValidator esBatchDeleteValidator;
 
-    @Autowired
-    private ESConditionUpdateValidator esConditionUpdateValidator;
+	@Autowired
+	private ESConditionUpdateValidator esConditionUpdateValidator;
 
-    @Autowired
-    private ESConditionDeleteValidator esConditionDeleteValidator;
+	@Autowired
+	private ESConditionDeleteValidator esConditionDeleteValidator;
 
-    @Resource
-    private ESNestedSearchService esNestedSearchService;
+	@Resource
+	private ESNestedSearchService esNestedSearchService;
+	@Value("${es.auto.refresh:true}")
+	private Boolean autoRefresh;
 
-    @Override
-    public DataResult<Boolean> esSave(SaveESObject obj) {
-        LOGGER.debug("esclient index request param:{}.", obj);
-        final DataResult<Boolean> dataResult = esSaveValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.save(obj);
-    }
+	@Override
+	public DataResult<Boolean> esSave(SaveESObject obj) {
+		LOGGER.debug("esclient index request param:{}.", obj);
+		final DataResult<Boolean> dataResult = esSaveValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.save(obj);
+	}
 
-    @Override
-    public DataResult<ESResponse> esQuery(QueryESObject obj) {
-        LOGGER.debug("esclient query req param:{}.", obj);
-        final DataResult<Boolean> validateResult = esQueryValidator.validate(obj);
-        if (validateResult.isFailed()) {
-            LOGGER.warn("esclient query req param error, illegal param:{}.", obj);
-            DataResult<ESResponse> dataResult = new DataResult<>();
-            dataResult.setStatus(validateResult.getStatus());
-            return dataResult;
-        }
-        return esNestedSearchService.query(obj);
-    }
+	@Override
+	public DataResult<ESResponse> esQuery(QueryESObject obj) {
+		LOGGER.debug("esclient query req param:{}.", obj);
+		final DataResult<Boolean> validateResult = esQueryValidator.validate(obj);
+		if (validateResult.isFailed()) {
+			LOGGER.warn("esclient query req param error, illegal param:{}.", obj);
+			DataResult<ESResponse> dataResult = new DataResult<>();
+			dataResult.setStatus(validateResult.getStatus());
+			return dataResult;
+		}
+		return esNestedSearchService.query(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> esDelete(DeleteESObject obj) {
-        LOGGER.debug("es delete , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esDeleteValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.delete(obj);
-    }
+	@Override
+	public DataResult<Boolean> esDelete(DeleteESObject obj) {
+		LOGGER.debug("es delete , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esDeleteValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.delete(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> esUpdate(UpdateESObject obj) {
-        LOGGER.debug("es update , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esUpdateValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.update(obj);
-    }
+	@Override
+	public DataResult<Boolean> esUpdate(UpdateESObject obj) {
+		LOGGER.debug("es update , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esUpdateValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.update(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> esBatchSave(BatchSaveESObject obj) {
-        LOGGER.debug("es batch save , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esBatchSaveValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.batchSave(obj);
-    }
+	@Override
+	public DataResult<Boolean> esBatchSave(BatchSaveESObject obj) {
+		LOGGER.debug("es batch save , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esBatchSaveValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.batchSave(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> esBatchUpdate(BatchUpdateESObject obj) {
-        LOGGER.debug("es batch update , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esBatchUpdateValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.batchUpdate(obj);
-    }
+	@Override
+	public DataResult<Boolean> esBatchUpdate(BatchUpdateESObject obj) {
+		LOGGER.debug("es batch update , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esBatchUpdateValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.batchUpdate(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> esBatchDelete(BatchDeleteESObject obj) {
-        LOGGER.debug("es batch delete , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esBatchDeleteValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.batchDelete(obj);
-    }
+	@Override
+	public DataResult<Boolean> esBatchDelete(BatchDeleteESObject obj) {
+		LOGGER.debug("es batch delete , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esBatchDeleteValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.batchDelete(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> conditionUpdate(ConditionUpdateESObject obj) {
-        LOGGER.debug("es condition update , param:{}.", obj);
-        final DataResult<Boolean> dataResult = esConditionUpdateValidator.validate(obj);
-        if (dataResult.isFailed()) {
-            return dataResult;
-        }
-        return esNestedSearchService.conditionUpdate(obj);
-    }
+	@Override
+	public DataResult<Boolean> conditionUpdate(ConditionUpdateESObject obj) {
+		LOGGER.debug("es condition update , param:{}.", obj);
+		final DataResult<Boolean> dataResult = esConditionUpdateValidator.validate(obj);
+		if (dataResult.isFailed()) {
+			return dataResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.conditionUpdate(obj);
+	}
 
-    @Override
-    public DataResult<Boolean> conditionDelete(ConditionDeleteESObject obj) {
-        LOGGER.debug("es condition delete , param:{}.", obj);
-        final DataResult<Boolean> dataResultResult = esConditionDeleteValidator.validate(obj);
-        if (dataResultResult.isFailed()) {
-            return dataResultResult;
-        }
-        return esNestedSearchService.conditionDelete(obj);
-    }
+	@Override
+	public DataResult<Boolean> conditionDelete(ConditionDeleteESObject obj) {
+		LOGGER.debug("es condition delete , param:{}.", obj);
+		final DataResult<Boolean> dataResultResult = esConditionDeleteValidator.validate(obj);
+		if (dataResultResult.isFailed()) {
+			return dataResultResult;
+		}
+		obj.setRefresh(autoRefresh);
+		return esNestedSearchService.conditionDelete(obj);
+	}
 }
