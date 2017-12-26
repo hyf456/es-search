@@ -12,13 +12,13 @@ public class SearchLogger {
 
 	public static void log(Object obj) {
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(obj.toString());
+			LOGGER.debug(obj.toString().replace("\n", " ").replace("\t", " "));
 		}
 	}
 
 	public static void log(String msg) {
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug(msg);
+			LOGGER.debug(msg.replace("\n", " ").replace("\t", " "));
 		}
 	}
 
