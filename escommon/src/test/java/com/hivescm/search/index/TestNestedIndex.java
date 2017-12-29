@@ -61,7 +61,7 @@ public class TestNestedIndex {
 	 */
 	@Test
 	public void test_nested() {
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 100; i++) {
 			Map<String, Object> data = new HashMap<>();
 			data.put("id", i);
 			String[] names = { "张三", "李四", "王洛", "王五", "李思思", "王老五" };

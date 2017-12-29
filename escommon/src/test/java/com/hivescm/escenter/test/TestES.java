@@ -158,7 +158,7 @@ public class TestES {
 	public void testConditionUpdate() {
 		ConditionUpdateESObject esObject = new ConditionUpdateESObject(SYSTEM_NAME, INDEX_NAME, TYPE_NAME);
 		// condition
-		SearchCondition condition = new SearchCondition("age", ConditionExpressionEnum.LESSER, "50");
+		SearchCondition condition = new SearchCondition("age", ConditionExpressionEnum.LESSER, "100");
 		List<SearchCondition> list = Lists.newArrayList(condition);
 		esObject.setConditions(list);
 		// dataMap
