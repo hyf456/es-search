@@ -74,7 +74,7 @@ public class CreateIndexStruct {
 	static boolean isSupportTextAndKeyword(Map<String, Object> map) {
 		if ("text".equals(map.get("type"))) {
 			Field field = (Field) map.get("fields");
-			return "keyword".equals(field.raw.get("type"));
+			return "keyword".equals(field.keyword.get("type"));
 		}
 		return false;
 	}

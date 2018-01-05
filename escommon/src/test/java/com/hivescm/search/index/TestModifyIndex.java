@@ -9,6 +9,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.sort.SortOrder;
+import org.hibernate.validator.internal.constraintvalidators.bv.future.FutureValidatorForOffsetDateTime;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.google.gson.Gson;
+import com.hivescm.common.serialize.api.json.GsonSerialize;
 import com.hivescm.search.utils.ModifyIndexFactory;
 import com.hivescm.search.utils.ModifyIndexFactory.UpdateProperties;
 
@@ -40,15 +43,23 @@ public class TestModifyIndex {
 	@Test
 	public void update_field_() {
 		try {
-			String index = "my_index_v1", type = "employee";
+			String index = "release-goods-3", type = "goods";
 			boolean success = modifyIndexFactory.reindex(index, type, new UpdateProperties() {
 				@Override
 				public Map<String, Object> adjustField(Map<String, Object> properties) {
-					Map<String, Object> weight = (Map<String, Object>) properties.get("age");
-					weight.put("type", "integer");
-					return properties;
+					for (Map.Entry<String, Object> entry : properties.entrySet()) {
+						String name = entry.getKey();
+						Map<String, Object> valueMap = (Map<String, Object>) entry.getValue();
+						if (valueMap.get("type").equals("text")) {
+							properties.put(name,
+									IndexField.make().setType(DataType.TEXT).setIKAnalyzer().setFieldKeyword().getResult());
+						}
+					}
+					String json = GsonSerialize.INSTANCE.encode(properties);
+					System.out.println(json);
+					return GsonSerialize.INSTANCE.decode(json, Map.class);
 				}
-			}, "id", SortOrder.ASC);
+			}, "shelvesTime", SortOrder.ASC);
 			Assert.assertTrue(success);
 		} catch (Exception e) {
 			e.printStackTrace();

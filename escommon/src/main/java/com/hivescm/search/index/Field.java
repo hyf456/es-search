@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Field {
-	Map<String, Object> raw = new HashMap<>();
+	Map<String, Object> keyword = new HashMap<>();
 
 	public static Field make() {
 		return new Field();
 	}
 
 	public Field setType(DataType type) {
-		raw.put("type", type.name().toLowerCase());
+		keyword.put("type", type.name().toLowerCase());
 		return this;
 	}
 
@@ -22,13 +22,13 @@ class Field {
 	 * @return
 	 */
 	public Field setIgnoreAbove(int ignore_above) {
-		raw.put("ignore_above", ignore_above);
+		keyword.put("ignore_above", ignore_above);
 		return this;
 	}
 
 	// 超过256个字符的文本，将会被忽略，不被索引
 	public Field setIgnoreAbove() {
-		raw.put("ignore_above", 256);
+		keyword.put("ignore_above", 256);
 		return this;
 	}
 }
