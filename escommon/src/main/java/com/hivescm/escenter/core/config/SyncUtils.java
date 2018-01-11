@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -75,30 +78,53 @@ public class SyncUtils {
 		ImmutableOpenMap<String, IndexMetaData> immutableOpenMap = response.getState().getMetaData().getIndices();
 		immutableOpenMap.forEach((entity) -> {
 			final String index = entity.key;
-			entity.value.getMappings().forEach((cursor) -> {
-				try {
-					String type = cursor.key;
-					String mapping = cursor.value.source().toString();
-					if (syncIndex.isSync(index, type)) {
-						if (isExistsIndex(destClient, index)) {
-							IndexOperator indexOperator = syncIndex.ifExist(index, type);
-							if (indexOperator == IndexOperator.SKIP) {
-								return;
-							} else if (indexOperator == IndexOperator.REMOVE_AND_CREATE) {
-								deleteIndex(destClient, index);
-							}
-						}
-						System.out.println("同步索引--->>>>>>index:" + index + "\ttype:" + type + "\t-> mapping:" + mapping);
-						CreateIndexResponse createIndexResponse = destClient.admin().indices().prepareCreate(index)
-								.addMapping(type, cursor.value.getSourceAsMap()).get();
-						System.out.println(createIndexResponse.isAcknowledged());
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
+			Map<String, Map<String, Object>> types = getIndexTypes(entity.value.getMappings(), syncIndex, index, destClient);
+			if (types.size() > 0) {
+				CreateIndexRequestBuilder indexRequestBuilder = destClient.admin().indices().prepareCreate(index);
+				System.out.println("同步索引--->>>>>>index:" + index);
+				for (Map.Entry<String, Map<String, Object>> entry : types.entrySet()) {
+					indexRequestBuilder.addMapping(entry.getKey(), entry.getValue());
+					System.out.println("\t\ttype:" + entry.getKey() + "\t-> mapping:" + entry.getValue());
 				}
-			});
+				CreateIndexResponse createIndexResponse = indexRequestBuilder.get();
+				System.out.println(createIndexResponse.isAcknowledged());
+			}
 		});
 		System.out.println("******************dump es index document******************");
+	}
+
+	/**
+	 * 获取索引下面的所有类型
+	 * 
+	 * @param immutableOpenMap
+	 * @param syncIndex
+	 * @param index
+	 * @param destClient
+	 * @return
+	 */
+	private static Map<String, Map<String, Object>> getIndexTypes(
+			ImmutableOpenMap<String, MappingMetaData> immutableOpenMap, SyncIndex syncIndex, String index,
+			TransportClient destClient) {
+		Map<String, Map<String, Object>> types = new HashMap<>();
+		immutableOpenMap.forEach((cursor) -> {
+			try {
+				String type = cursor.key;
+				if (syncIndex.isSync(index, type)) {
+					if (isExistsIndex(destClient, index)) {
+						IndexOperator indexOperator = syncIndex.ifExist(index, type);
+						if (indexOperator == IndexOperator.SKIP) {
+							return;
+						} else if (indexOperator == IndexOperator.REMOVE_AND_CREATE) {
+							deleteIndex(destClient, index);
+						}
+					}
+					types.put(type, cursor.value.getSourceAsMap());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		return types;
 	}
 
 	/**
