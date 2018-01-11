@@ -70,6 +70,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 		String[] state = (String[]) queryMap.get("state");
 		Integer pageSize = (Integer) queryMap.get("pageSize");
 		Integer pageNo = (Integer) queryMap.get("pageNo");
+		String[] goodsState = (String[]) queryMap.get("goodsState");
 		Map<String, SortEnum> sortMap = (Map<String, SortEnum>) queryMap.get("sortMap");
 		BoolQueryBuilder boolQueryBuilder2 = QueryBuilders.boolQuery();
 		BoolQueryBuilder boolQueryBuilder1 = QueryBuilders.boolQuery();
@@ -114,6 +115,12 @@ public class ProductSearchServiceImpl implements ProductSearchService {
 			boolQueryBuilder1.must(QueryBuilders.termQuery("companyId", companyId));
 			boolQueryBuilder2.must(QueryBuilders.termQuery("companyId", companyId));
 		}
+		if (goodsState != null && goodsState.length != 0) {
+		   QueryBuilder queryBuilder = QueryBuilders.termsQuery("goods.state", goodsState);
+		   boolQueryBuilder.must(QueryBuilders.nestedQuery("goods", queryBuilder, ScoreMode.None));
+		   boolQueryBuilder1.must(QueryBuilders.nestedQuery("goods", queryBuilder, ScoreMode.None));
+		   boolQueryBuilder2.must(QueryBuilders.nestedQuery("goods", queryBuilder, ScoreMode.None));
+		  }
 		BoolQueryBuilder boolQueryBuilderAll = new BoolQueryBuilder();
 		boolQueryBuilderAll.should(boolQueryBuilder);
 		boolQueryBuilderAll.should(boolQueryBuilder1);
