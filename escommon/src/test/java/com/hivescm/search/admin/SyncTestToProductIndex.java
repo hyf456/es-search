@@ -19,13 +19,17 @@ public class SyncTestToProductIndex {
 		try {
 			testClient = SyncUtils.createEsClient("192.168.177.11:9300,192.168.177.226:9300", "elastic", "changeme",
 					"real-test");
-			productClient = SyncUtils.createEsClient("139.199.97.199:9300", "elastic", "changeme", "ES");
+			// productClient = SyncUtils.createEsClient("139.199.97.199:9300",
+			// "elastic", "changeme", "ES");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Test
+	/**
+	 * 生产环境请不要随意处理
+	 */
+	// @Test
 	public void test_sync_index() {
 		try {
 			SyncUtils.sync_index_struct(testClient, productClient, new SyncIndex() {
