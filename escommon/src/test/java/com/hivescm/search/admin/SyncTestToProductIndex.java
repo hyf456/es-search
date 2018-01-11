@@ -48,7 +48,7 @@ public class SyncTestToProductIndex {
 
 				@Override
 				public IndexOperator ifExist(String index, String type) {
-					return IndexOperator.REMOVE_AND_CREATE;
+					return IndexOperator.SKIP;
 				}
 			});
 		} catch (Exception e) {
