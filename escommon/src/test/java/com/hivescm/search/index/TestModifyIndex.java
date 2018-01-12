@@ -22,6 +22,8 @@ import com.hivescm.common.serialize.api.json.GsonSerialize;
 import com.hivescm.search.utils.ModifyIndexFactory;
 import com.hivescm.search.utils.ModifyIndexFactory.UpdateProperties;
 
+import ch.qos.logback.core.joran.conditional.IfAction;
+
 /**
  * 更新TMS索引数据结构
  * 
@@ -43,23 +45,27 @@ public class TestModifyIndex {
 	@Test
 	public void update_field_() {
 		try {
-			String index = "release-goods-3", type = "goods";
+			String index = "release-dealer-2", type = "dealer";
 			boolean success = modifyIndexFactory.reindex(index, type, new UpdateProperties() {
 				@Override
 				public Map<String, Object> adjustField(Map<String, Object> properties) {
 					for (Map.Entry<String, Object> entry : properties.entrySet()) {
-						String name = entry.getKey();
 						Map<String, Object> valueMap = (Map<String, Object>) entry.getValue();
 						if (valueMap.get("type").equals("text")) {
-							properties.put(name,
-									IndexField.make().setType(DataType.TEXT).setIKAnalyzer().setFieldKeyword().getResult());
+							System.out.println("rewrite field:" + entry.getKey());
+							entry.setValue(IndexField.make().setType(DataType.TEXT).setIKAnalyzer().setFieldKeyword().getResult());
+						} else if (valueMap.get("type").equals("nested")) {
+							System.out.println("rewrite nested.field:" + entry.getKey());
+							Map<String, Object> childrenProperties = (Map<String, Object>) valueMap.get("properties");
+							childrenProperties = adjustField(childrenProperties);
+							valueMap.put("properties", childrenProperties);
 						}
 					}
 					String json = GsonSerialize.INSTANCE.encode(properties);
 					System.out.println(json);
 					return GsonSerialize.INSTANCE.decode(json, Map.class);
 				}
-			}, "shelvesTime", SortOrder.ASC);
+			}, "dealerId", SortOrder.ASC);
 			Assert.assertTrue(success);
 		} catch (Exception e) {
 			e.printStackTrace();
