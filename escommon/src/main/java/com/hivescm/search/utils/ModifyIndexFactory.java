@@ -37,7 +37,6 @@ public class ModifyIndexFactory {
 	 * 
 	 * @param index 索引名称
 	 * @param type 类型
-	 * @param client ES client
 	 * @param updateProperties 更新属性处理
 	 * @param sortName 排序字段
 	 * @param order 排序方式
@@ -50,23 +49,26 @@ public class ModifyIndexFactory {
 			throws IOException, InterruptedException, ExecutionException {
 		String tmp_index = index + "_tmp";
 		MappingMetaData metaData = IndexUtils.loadIndexMeta(client, index, type);
-		Map<String, Object> data = updateProperties.execute(metaData.getSourceAsMap());
-		if (!IndexUtils.createIndex(client, tmp_index, type, data)) {
-			throw new IllegalArgumentException("创建临时索引失败");
+		if (null != metaData) {
+			Map<String, Object> data = updateProperties.execute(metaData.getSourceAsMap());
+			if (!IndexUtils.createIndex(client, tmp_index, type, data)) {
+				throw new IllegalArgumentException("创建临时索引失败");
+			}
+			/* 将数据拷贝到临时索引 */
+			copy_data(index, tmp_index, type, sortName, order);
+			/* 删除主索引 */
+			IndexUtils.deleteIndex(client, index);
+			/* 重建主索引 */
+			if (!IndexUtils.createIndex(client, index, type, data)) {
+				throw new IllegalArgumentException("重建主索引失败");
+			}
+			/* 从临时索引中拷贝到主索引中 */
+			copy_data(tmp_index, index, type, sortName, order);
+			/* 删除临时索引 */
+			IndexUtils.deleteIndex(client, tmp_index);
+			return true;
 		}
-		/* 将数据拷贝到临时索引 */
-		copy_data(index, tmp_index, type, sortName, order);
-		/* 删除主索引 */
-		IndexUtils.deleteIndex(client, index);
-		/* 重建主索引 */
-		if (!IndexUtils.createIndex(client, index, type, data)) {
-			throw new IllegalArgumentException("重建主索引失败");
-		}
-		/* 从临时索引中拷贝到主索引中 */
-		copy_data(tmp_index, index, type, sortName, order);
-		/* 删除临时索引 */
-		IndexUtils.deleteIndex(client, tmp_index);
-		return true;
+		return false;
 	}
 
 	/**
@@ -75,7 +77,8 @@ public class ModifyIndexFactory {
 	 * @param srcIndex 原索引
 	 * @param dectIndex 目标索引
 	 * @param type 索引类型
-	 * @param client
+	 * @param sortName
+	 * @param order
 	 */
 	private void copy_data(String srcIndex, String dectIndex, String type, String sortName, SortOrder order) {
 		int batch = 100;
@@ -90,6 +93,7 @@ public class ModifyIndexFactory {
 			batchList.add(indexRequestBuilder);
 			if (batchList.size() == batch) {
 				boolean success = searchService.batchSave(batchList);
+				batchList.clear();
 				System.out.println("批量提交" + batch + "->endIndex:" + count + " 状态:" + success);
 			}
 			count++;

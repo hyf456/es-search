@@ -40,8 +40,21 @@ public class SearchService {
 				bulkRequestBuilder.add(requestBuilder);
 			}
 			return !bulkRequestBuilder.get().hasFailures();
-		} else {
-			return false;
 		}
+		return false;
 	}
+
+	/**
+	 * 批量保存
+	 *
+	 * @param bulkRequestBuilder
+	 * @return
+	 */
+	public boolean batchSave(BulkRequestBuilder bulkRequestBuilder) {
+		if (bulkRequestBuilder.numberOfActions() > 0) {
+			return !bulkRequestBuilder.get().hasFailures();
+		}
+		return false;
+	}
+
 }

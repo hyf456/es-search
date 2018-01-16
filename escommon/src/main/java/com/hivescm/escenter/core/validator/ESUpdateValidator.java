@@ -18,7 +18,10 @@ import com.hivescm.escenter.common.UpdateESObject;
  */
 @Component(value = "esUpdateValidator")
 public class ESUpdateValidator extends BaseUpdateValidator {
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(ESUpdateValidator.class);
+
+	@Override
 	public DataResult<Boolean> validate(UpdateESObject obj) {
 		final DataResult<Boolean> superValidateResult = super.validate(obj);
 
