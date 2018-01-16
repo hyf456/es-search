@@ -73,6 +73,48 @@ public class TestModifyIndex {
 		}
 	}
 
+	/**
+	 * 修改字段类型（重建索引+会删除所有数据）
+	 *
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws IOException
+	 */
+	@Test
+	public void update_field_type() {
+		try {
+			String index = "tms-waybill", type = "tms-waybill-list";
+			boolean success = modifyIndexFactory.reindex(index, type, new UpdateProperties() {
+				@Override
+				public Map<String, Object> adjustField(Map<String, Object> properties) {
+
+					for (Map.Entry<String, Object> entry : properties.entrySet()) {
+						Map<String, Object> valueMap = (Map<String, Object>) entry.getValue();
+						if (entry.getKey().equals("volume") && valueMap.get("type").equals("text")) {
+							System.out.println("rewrite field:" + entry.getKey());
+							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
+						}
+						if (entry.getKey().equals("weight") && valueMap.get("type").equals("text")) {
+							System.out.println("rewrite field:" + entry.getKey());
+							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
+						}
+						if (entry.getKey().equals("totalFee") && valueMap.get("type").equals("text")) {
+							System.out.println("rewrite field:" + entry.getKey());
+							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
+						}
+					}
+					String json = GsonSerialize.INSTANCE.encode(properties);
+					System.out.println(json);
+					return GsonSerialize.INSTANCE.decode(json, Map.class);
+				}
+			}, "dealerId", SortOrder.ASC);
+			Assert.assertTrue(success);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail("失败了");
+		}
+	}
+
 	@Autowired
 	private Client client;
 
