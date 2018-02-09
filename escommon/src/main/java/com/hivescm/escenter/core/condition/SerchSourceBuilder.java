@@ -97,7 +97,7 @@ public class SerchSourceBuilder {
 			return;
 		}
 		for (OrderCondition orderCondition : orderConditions) {
-			searchSourceBuilder.sort(getSort(orderCondition));
+			this.getSort(orderCondition, searchSourceBuilder);
 		}
 	}
 
@@ -117,5 +117,20 @@ public class SerchSourceBuilder {
 			order = null;
 		}
 		return order;
+	}
+
+	public void getSort(OrderCondition orderCondition, SearchSourceBuilder searchSourceBuilder) {
+		final String fieldName = orderCondition.getFieldName();
+		final SortEnum sort = orderCondition.getOrderCondition();
+		switch (sort) {
+			case ASC:
+				searchSourceBuilder.sort(fieldName, SortOrder.ASC);
+				break;
+			case DESC:
+				searchSourceBuilder.sort(fieldName, SortOrder.DESC);
+				break;
+			default:
+				break;
+		}
 	}
 }

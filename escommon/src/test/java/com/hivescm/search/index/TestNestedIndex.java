@@ -91,6 +91,7 @@ public class TestNestedIndex {
 				.should(QueryBuilders.nestedQuery("comments", QueryBuilders.termQuery("comments.stars", "17"), ScoreMode.Max));
 		queryBuilder
 				.should(QueryBuilders.nestedQuery("comments", QueryBuilders.matchQuery("comments.name", "在路上"), ScoreMode.Max));
+
 		SearchRequestBuilder builder = client.prepareSearch("a").setTypes("b").setQuery(queryBuilder);
 		System.out.println(builder.toString());
 		SearchResponse response = builder.get();

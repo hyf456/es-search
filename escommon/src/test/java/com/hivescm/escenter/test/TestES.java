@@ -68,7 +68,7 @@ public class TestES {
 		dataMap.put("createTime", 1513072397167L);
 		obj.setDataMap(dataMap);
 		DataResult<Boolean> result = esSearchService.esUpdate(obj);
-		System.out.println(result.toJSON());
+		System.out.println("---" + result.toJSON());
 		Assert.assertTrue(result.getResult());
 	}
 

@@ -45,7 +45,7 @@ public class TestModifyIndex {
 	@Test
 	public void update_field_() {
 		try {
-			String index = "release-dealer-2", type = "dealer";
+			String index = "tms-waybill", type = "tms-waybill-list";
 			boolean success = modifyIndexFactory.reindex(index, type, new UpdateProperties() {
 				@Override
 				public Map<String, Object> adjustField(Map<String, Object> properties) {
@@ -90,18 +90,22 @@ public class TestModifyIndex {
 
 					for (Map.Entry<String, Object> entry : properties.entrySet()) {
 						Map<String, Object> valueMap = (Map<String, Object>) entry.getValue();
-						if (entry.getKey().equals("volume") && valueMap.get("type").equals("text")) {
-							System.out.println("rewrite field:" + entry.getKey());
-							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
-						}
-						if (entry.getKey().equals("weight") && valueMap.get("type").equals("text")) {
-							System.out.println("rewrite field:" + entry.getKey());
-							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
-						}
+//						if (entry.getKey().equals("volume") && valueMap.get("type").equals("text")) {
+//							System.out.println("rewrite field:" + entry.getKey());
+//							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
+//						}
+//						if (entry.getKey().equals("weight") && valueMap.get("type").equals("text")) {
+//							System.out.println("rewrite field:" + entry.getKey());
+//							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
+//						}
 						if (entry.getKey().equals("totalFee") && valueMap.get("type").equals("text")) {
 							System.out.println("rewrite field:" + entry.getKey());
 							entry.setValue(IndexField.make().setType(DataType.DOUBLE).getResult());
 						}
+//						if (entry.getKey().equals("appointDate") && valueMap.get("type").equals("date")) {
+//							System.out.println("rewrite field:" + entry.getKey());
+//							entry.setValue(IndexField.make().setType(DataType.TEXT).setIKAnalyzer().setFieldKeyword().getResult());
+//						}
 					}
 					String json = GsonSerialize.INSTANCE.encode(properties);
 					System.out.println(json);

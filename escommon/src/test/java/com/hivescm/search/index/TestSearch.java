@@ -8,6 +8,7 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest.RefreshPolicy;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHits;
 import org.junit.Test;
@@ -87,17 +88,20 @@ public class TestSearch {
 
 	@Test
 	public void test_search() {
+		QueryBuilder queryBuilder = QueryBuilders.boolQuery().must(
+				// QueryBuilders.termQuery("description","D2017013"))
+				// QueryBuilders.termQuery("age",20))
+				QueryBuilders.wildcardQuery("description.keyword", "*TD20*"));
+
 		SearchResponse response = esClient.prepareSearch("my_index_v1").setTypes("employee")
-				.setQuery(QueryBuilders.boolQuery().must(
-						// QueryBuilders.termQuery("description","D2017013"))
-						// QueryBuilders.termQuery("age",20))
-						QueryBuilders.wildcardQuery("description.keyword", "*TD20*"))
+				.setQuery(queryBuilder
 				// QueryBuilders.boolQuery()
 				// .must(QueryBuilders.termQuery("description","中国"))
 				// .must()
 				).get();
+		System.out.println("query string : " + queryBuilder.toString());
 		SearchHits hits = response.getHits();
-		System.out.println(hits.getTotalHits());
+		System.out.println("hits.getTotalHits() : " + hits.getTotalHits());
 		for (int i = 0; i < hits.getHits().length; i++) {
 			System.out.println(hits.getHits()[i].getSourceAsString());
 		}
