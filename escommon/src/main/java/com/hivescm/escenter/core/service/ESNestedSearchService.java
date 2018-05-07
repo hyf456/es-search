@@ -1,12 +1,18 @@
 package com.hivescm.escenter.core.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Resource;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hivescm.common.domain.DataResult;
+import com.hivescm.common.domain.Status;
+import com.hivescm.escenter.ESErrorCode;
+import com.hivescm.escenter.common.*;
+import com.hivescm.escenter.common.conditions.SearchCondition;
+import com.hivescm.escenter.core.condition.GroupConditionBuilder;
+import com.hivescm.escenter.core.condition.QueryConditionBuilder;
+import com.hivescm.escenter.core.condition.SerchSourceBuilder;
+import com.hivescm.escenter.core.groovy.NestedUpdateGroovyScritpBuilder;
+import com.hivescm.escenter.core.handler.ESQueryResponseHandler;
+import com.hivescm.search.log.SearchLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -36,29 +42,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hivescm.common.domain.DataResult;
-import com.hivescm.common.domain.Status;
-import com.hivescm.escenter.ESErrorCode;
-import com.hivescm.escenter.common.BaseESObject;
-import com.hivescm.escenter.common.BatchDeleteESObject;
-import com.hivescm.escenter.common.BatchSaveESObject;
-import com.hivescm.escenter.common.BatchUpdateESObject;
-import com.hivescm.escenter.common.ConditionDeleteESObject;
-import com.hivescm.escenter.common.ConditionUpdateESObject;
-import com.hivescm.escenter.common.DeleteESObject;
-import com.hivescm.escenter.common.ESResponse;
-import com.hivescm.escenter.common.QueryESObject;
-import com.hivescm.escenter.common.SaveESObject;
-import com.hivescm.escenter.common.UpdateESObject;
-import com.hivescm.escenter.common.conditions.SearchCondition;
-import com.hivescm.escenter.core.condition.GroupConditionBuilder;
-import com.hivescm.escenter.core.condition.QueryConditionBuilder;
-import com.hivescm.escenter.core.condition.SerchSourceBuilder;
-import com.hivescm.escenter.core.groovy.NestedUpdateGroovyScritpBuilder;
-import com.hivescm.escenter.core.handler.ESQueryResponseHandler;
-import com.hivescm.search.log.SearchLogger;
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by DongChunfu on 2017/7/26
